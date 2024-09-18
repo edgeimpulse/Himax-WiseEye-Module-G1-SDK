@@ -5,7 +5,7 @@ TOOLCHAIN = gnu
 ## Toolchain Path Settings ##
 #############################
 ifeq ($(TOOLCHAIN), gnu)
-GNU_TOOLPATH = "$(MKFILE_DIR)gcc-arm-none-eabi-10-2020-q4-major/bin"
+GNU_TOOLPATH = "/Applications/ARM/bin"
 else ifeq ($(TOOLCHAIN), arm)
 ARMLMD_LICENSE_FILE = "C:/Users/$(USERNAME)/AppData/Roaming/arm/ds/licenses"
 ARM_PRODUCT_DEF = "C:/Program Files/Arm/Development Studio 2020.1/sw/mappings/gold.elmap"
@@ -61,17 +61,17 @@ ifeq ($(CORE_SETTING), DUAL_CORE)
 endif
 
 ## Variables For Image Gen
-BIG_CORE_OUTPUT_FILE = $(BIG_CORE_SRC_DIR)\obj_epii_evb_icv30_bdv10\$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)\WE2_CM55M_$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)_s
-SMALL_CORE_OUTPUT_FILE = $(SMALL_CORE_SRC_DIR)\obj_epii_evb_icv30_bdv10\$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)\WE2_CM55S_$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)_s
+BIG_CORE_OUTPUT_FILE = $(BIG_CORE_SRC_DIR)/obj_epii_evb_icv30_bdv10/$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)/WE2_CM55M_$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)_s
+SMALL_CORE_OUTPUT_FILE = $(SMALL_CORE_SRC_DIR)/obj_epii_evb_icv30_bdv10/$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)/WE2_CM55S_$(TOOLCHAIN)_epii_evb_$(IC_PACKAGE_SEL)_s
 BIG_CORE_IMG_GEN_INPUT_FILE = WE2_CM55M_we2_evb_s
 SMALL_CORE_IMG_GEN_INPUT_FILE = WE2_CM55S_we2_evb_s
 
 ifeq ($(CORE_SETTING), DUAL_CORE)
-    IMAGE_GEN_INPUT_DIR = $(IMAGE_GEN_TOOL_DIR)\input_case3_secboot
-    IMAGE_GEN_OUTPUT_DIR = $(IMAGE_GEN_TOOL_DIR)\output_case3_secboot_nodiv
+    IMAGE_GEN_INPUT_DIR = $(IMAGE_GEN_TOOL_DIR)/input_case3_secboot
+    IMAGE_GEN_OUTPUT_DIR = $(IMAGE_GEN_TOOL_DIR)/output_case3_secboot_nodiv
 else ifeq ($(CORE_SETTING), SINGLE_CORE)
-    IMAGE_GEN_INPUT_DIR = $(IMAGE_GEN_TOOL_DIR)\input_case1_secboot
-    IMAGE_GEN_OUTPUT_DIR = $(IMAGE_GEN_TOOL_DIR)\output_case1_secboot_nodiv
+    IMAGE_GEN_INPUT_DIR = $(IMAGE_GEN_TOOL_DIR)/input_case1_secboot
+    IMAGE_GEN_OUTPUT_DIR = $(IMAGE_GEN_TOOL_DIR)/output_case1_secboot_nodiv
 else
     $(error CORE_SETTING="$(CORE_SETTING)" is NOT supported yet!)
 endif
@@ -116,14 +116,15 @@ big_core_clean:
 flash:
 	@echo generate output.img for GNU toolchain...
 	@echo using json setting file = $(IMG_GEN_JSON)
-	copy $(BIG_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)\$(BIG_CORE_IMG_GEN_INPUT_FILE).elf
-	copy $(BIG_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)\$(BIG_CORE_IMG_GEN_INPUT_FILE).map
+	cp $(BIG_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).elf
+	cp $(BIG_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).map
 ifeq ($(CORE_SETTING), DUAL_CORE)
-	copy $(SMALL_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)\$(SMALL_CORE_IMG_GEN_INPUT_FILE).elf
-	copy $(SMALL_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)\$(SMALL_CORE_IMG_GEN_INPUT_FILE).map
+	cp $(SMALL_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).elf
+	cp $(SMALL_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).map
 endif
-	cd $(IMAGE_GEN_TOOL_DIR) && .\we2_local_image_gen.exe $(IMG_GEN_JSON)
-	copy $(IMAGE_GEN_OUTPUT_DIR)\output.img $(OTA_TOOL_DIR)\img
+	cd $(IMAGE_GEN_TOOL_DIR) && ./we2_local_image_gen $(IMG_GEN_JSON)
+	cp $(IMAGE_GEN_OUTPUT_DIR)/output.img $(OTA_TOOL_DIR)/img
+	cp $(IMAGE_GEN_OUTPUT_DIR)/output.img ./firmware.img
 
 info:
 	@echo USERNAME = $(USERNAME)
@@ -137,6 +138,11 @@ info:
 	@echo IMAGE_GEN_TOOL_DIR = $(IMAGE_GEN_TOOL_DIR)
 	@echo OTA_TOOL_DIR = $(OTA_TOOL_DIR)
 	@echo IMG_GEN_JSON = $(IMG_GEN_JSON)
+	@echo CP = $(CP)
+	@echo RM = $(RM)
+	@echo RMD = $(RMD)
+	@echo ECHO = $(ECHO)
+	@echo MKD = $(MKD)
 ifeq ($(TOOLCHAIN), gnu)
 	@echo GNU_TOOLPATH = $(GNU_TOOLPATH)
 else ifeq ($(TOOLCHAIN), arm)
