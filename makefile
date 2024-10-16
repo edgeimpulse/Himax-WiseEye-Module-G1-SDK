@@ -47,8 +47,9 @@ endif
 #CORE_SETTING = DUAL_CORE
 CORE_SETTING = SINGLE_CORE
 
-APP_TYPE = sample_code_app
-#APP_TYPE = sample_code_prerolling
+APP_TYPE = ei_standalone_inferencing
+# APP_TYPE = sample_code_app
+# APP_TYPE = sample_code_prerolling
 #APP_TYPE = sample_code_app_freertos
 
 ## Variables for FW
