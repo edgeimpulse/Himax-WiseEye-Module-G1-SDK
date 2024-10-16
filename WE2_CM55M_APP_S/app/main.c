@@ -1041,3 +1041,15 @@ int main(void)
 	return 0;
 }
 #endif
+
+#ifdef EI_STANDALONE_INFERENCING
+#include "app_main.h"
+
+int main(void)
+{
+    board_init();
+	app_main();
+
+	return 0;
+}
+#endif
