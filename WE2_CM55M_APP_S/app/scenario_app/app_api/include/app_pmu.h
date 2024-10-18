@@ -30,6 +30,10 @@ typedef struct
 	uint8_t wakeupCPU_int_pin[MAX_SUPPORT_WAKEUP_CPU_INT_PIN_MAX];    /**< gpio pin number to wake up CPU*/
 }AppCfgCustGpio_t;
 
+#if defined(PMU_SLEEP_CLK_DISABLE)
+void app_pmu_clk_enable();
+#endif
+
 /**
  * \brief	set pmu to enter into sleep 1 mode
  *
@@ -51,14 +55,14 @@ void app_pmu_enter_sleep1(AppCfgCustGpio_t gpio_cfg, uint32_t sensor_rtc_ms, uin
 void app_pmu_enter_sleep1_aos(AppCfgCustGpio_t gpio_cfg, uint32_t sensor_rtc_ms, uint32_t sys_rtc_ms, uint8_t quickboot);
 
 /**
- * \brief	set pmu to enter into sleep 1 cdm mode
+ * \brief	set pmu to enter into sleep 1 boot with capture
  *
  * \param[in]	gpio_cfg	        gpio pin config for pmu to wake up CPU
  * \param[in]	sensor_rtc_ms	    sensor rtc timer in ms to wake up CPU
  * \param[in]	quickboot	        enable quick boot mode to wake up CPU 
  * \return	void
  */
-void app_pmu_enter_sleep1_cdm(AppCfgCustGpio_t gpio_cfg, uint32_t sensor_rtc_ms, uint8_t quickboot);
+void app_pmu_enter_sleep1_bootwithcap(AppCfgCustGpio_t gpio_cfg, uint32_t sys_rtc_ms);
 /**
  * \brief	set pmu to enter into sleep 2 mode
  *
@@ -75,6 +79,11 @@ void app_pmu_enter_sleep2(AppCfgCustGpio_t gpio_cfg, uint32_t sensor_rtc_ms);
  * \return	void
  */
 void app_pmu_enter_shutdown(AppCfgCustGpio_t gpio_cfg);
+
+#if defined(PMU_SIMO_VOLT)
+void set_simo_0p9v(void);
+void set_simo_0p8v(void);
+#endif
 
 #ifdef __cplusplus
 }

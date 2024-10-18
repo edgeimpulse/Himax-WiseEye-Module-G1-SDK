@@ -76,7 +76,19 @@ SECTIONS
 #if defined (TFLITE_ALGO_ENABLED)
     .model : ALIGN(4)
     {
-    	* (.tflite_model) 
+    	* (.tflite_model)
+#if defined (HMX_BD_ENABLE)
+    	* (.tflu_bd_model)
+#endif
+#if defined (HMX_FD_ENABLE)
+    	* (.tflu_fd_model)
+#endif
+#if defined (HMX_HPOSE_ENABLE)
+    	* (.tflu_head_pose_model)
+#endif
+#if defined (HMX_FR_ENABLE)
+    	* (.tflu_fr_model)
+#endif
     } > CM55M_S_SRAM
 #endif
 #endif
@@ -94,7 +106,7 @@ SECTIONS
         __rodata_start = .;
         *(.rodata .rodata.* .constdata .constdata.*)
         __rodata_end = .;
-    } > CM55M_S_APP_ROM
+    } > CM55M_S_APP_DATA
     
     /*
      * for exception handling/unwind - some Newlib functions (in common
@@ -237,7 +249,22 @@ SECTIONS
 #if defined (TFLITE_ALGO_ENABLED)
     .model : ALIGN(4)
     {
-    	* (.tflite_model) 
+    	* (.tflite_model)
+#if defined (HMX_PARKING_ENABLE)
+    	* (.tflu_parking_model)
+#endif
+#if defined (HMX_BD_ENABLE)
+    	* (.tflu_bd_model)
+#endif
+#if defined (HMX_FD_ENABLE)
+    	* (.tflu_fd_model)
+#endif
+#if defined (HMX_HPOSE_ENABLE)
+    	* (.tflu_head_pose_model)
+#endif
+#if defined (HMX_FR_ENABLE)
+    	* (.tflu_fr_model)
+#endif
     } > CM55M_S_APP_FLASH1
 #endif
 #endif

@@ -6,6 +6,9 @@
 #include "app_api.h"
 #include "app_spi_m.h"
 
+#include "hx_drv_timer.h"
+#include "hx_drv_scu_export.h"
+
 static bool app_spi_m0_rx_busy_status = false;
 static bool app_spi_m1_rx_busy_status = false;
 static bool app_spi_m2_rx_busy_status = false;
@@ -108,7 +111,7 @@ static void app_spi_m1_cb_fun_tx(void)
 
 static void app_spi_m2_cb_fun_rx(void)
 {
-    dbg_printf(DBG_MORE_INFO,"app_spi_m2_cb_fun_rx Master1 RX CB_FUN\n");
+    dbg_printf(DBG_MORE_INFO,"app_spi_m2_cb_fun_rx Master2 RX CB_FUN\n");
 
     app_spi_m2_rx_busy_status = false;
     return;
@@ -116,7 +119,7 @@ static void app_spi_m2_cb_fun_rx(void)
 
 static void app_spi_m2_cb_fun_tx(void)
 {
-    dbg_printf(DBG_MORE_INFO,"app_spi_m2_cb_fun_tx Master1 TX CB_FUN\n");
+    dbg_printf(DBG_MORE_INFO,"app_spi_m2_cb_fun_tx Master2 TX CB_FUN\n");
 
     app_spi_m2_tx_busy_status = false;
     return;
@@ -129,6 +132,13 @@ int8_t app_spi_m_open(SPI_MST_E spi_id, uint32_t freq)
     
     if(spi_id < SPI_MST_0 || spi_id > SPI_MST_2)
         return API_INVALID_ID;
+    
+    hx_drv_scu_set_pdlsc_sspimclk_cfg(SCU_LSCSSPIMSRC_PLL, SCU_LSCCLKDIV_1);
+    #if 1
+    uint32_t sspimclk;
+    if(0 == drv_interface_get_freq(SCU_CLK_FREQ_TYPE_LSC_SSPIM, &sspimclk))
+        dbg_printf(DBG_LESS_INFO, "SCU_CLK_FREQ_TYPE_LSC_SSPIM freq=%u\n", sspimclk);
+    #endif
     
     dev_spi_m = hx_drv_spi_mst_get_dev((USE_DW_SPI_MST_E)spi_id);
 
@@ -218,13 +228,13 @@ int8_t app_spi_m_write(SPI_MST_E spi_id, uint8_t *tx_data, uint32_t tx_len, SPI_
     
     if(data_type == 0x00)
     {
-        int32_t *ret;
-        
-        ret = dev_spi_m->spi_write_dma(tx_data, tx_len, (void *)func_ptr);
+        int32_t ret;
+		
+        ret = dev_spi_m->spi_write_ptl(NULL, 0, tx_data, tx_len, (void *)func_ptr);
 
-        if(*ret < 0)
+        if(ret < 0)
         {
-            dbg_printf(DBG_LESS_INFO, "spi_write_dma() error\n");
+            dbg_printf(DBG_LESS_INFO, "spi_write_ptl() error\n");
             *spi_m_tx_busy_status = false;
             return API_ERROR;
         }
@@ -255,8 +265,8 @@ int8_t app_spi_m_write(SPI_MST_E spi_id, uint8_t *tx_data, uint32_t tx_len, SPI_
     wait_count = 0;
     while(*spi_m_tx_busy_status == true)
     {
-        board_delay_ms(10);
-
+    	hx_drv_timer_cm55x_delay_ms(10, TIMER_STATE_DC);
+		
         if(wait_count++ >300)
         {
             dev_spi_m->spi_write_ptl_halt();
@@ -273,7 +283,7 @@ int8_t app_spi_m_read(SPI_MST_E spi_id, uint8_t *rx_data, uint32_t rx_len)
 {
     DEV_SPI_PTR dev_spi_m;
     uint32_t wait_count;
-    int32_t *ret;
+    int32_t ret;
     bool *spi_m_rx_busy_status;
     
     typedef void (*func)(void);
@@ -313,8 +323,9 @@ int8_t app_spi_m_read(SPI_MST_E spi_id, uint8_t *rx_data, uint32_t rx_len)
     hx_spimcomm_register_rx_cb(spi_id, (spimcomm_cb_t)func_ptr);
     
 	ret = dev_spi_m->spi_read_dma(rx_data, rx_len, func_ptr);
-    
-    if(*ret < 0)
+    hx_InvalidateDCache_by_Addr((volatile void *)rx_data, sizeof(uint8_t) * rx_len);
+	
+    if(ret < 0)
     {
         dbg_printf(DBG_LESS_INFO, "spi_read_dma() error\n");
         *spi_m_rx_busy_status = false;
@@ -324,8 +335,8 @@ int8_t app_spi_m_read(SPI_MST_E spi_id, uint8_t *rx_data, uint32_t rx_len)
     wait_count = 0;
     while(*spi_m_rx_busy_status == true)
     {
-        board_delay_ms(10);
-        
+    	hx_drv_timer_cm55x_delay_ms(10, TIMER_STATE_DC);
+		
         if(wait_count++ > 100)
         {
             dbg_printf(DBG_LESS_INFO, "app_spi_m_read() wait time out\n");
@@ -334,7 +345,7 @@ int8_t app_spi_m_read(SPI_MST_E spi_id, uint8_t *rx_data, uint32_t rx_len)
         }
     }
     /*
-    for(int i = 0; i < rx_len; i++)
+	for(uint32_t i = 0; i < rx_len; i++)
 	{
 		dbg_printf(DBG_LESS_INFO, "%02x ", rx_data[i]);
         if((i%16)==15)

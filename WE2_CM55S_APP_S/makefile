@@ -5,7 +5,7 @@
 EPII_ROOT = .
 
 # Application name
-APPL ?= WE2_CM55S
+APPL ?= EPII_CM55S
 
 # Optimization Level
 OLEVEL ?= O2
@@ -14,19 +14,19 @@ DEBUG ?= 1
 # Current Board And Core
 # BOARD: epii_fpga, epii_evb
 ##
-BOARD ?= epii_evb
+BOARD ?= epii_fpga
 BD_VER ?= 10
 CORTEX_M ?= 55
 #BIG, SMALL
 EPII_CORE ?= SMALL
 
 ##
-# IC package select : LQFP128/WLCSP65
+# IC package select : LQFP128/WLCSP65/QFN88/BGA64
 ##
 IC_PACKAGE_SEL = LQFP128
 
 ##
-# IC Version: 10(chipA) 20(chipB)..
+# IC Version: 10(chipA) 20(chipB) 30(chipC)
 ##
 IC_VER ?= 30
 
@@ -39,7 +39,7 @@ CoreVolt ?= 0P9V
 # Set toolchain
 # arm, gnu
 ##
-TOOLCHAIN ?= gnu
+TOOLCHAIN ?= arm
 ##
 # Definition of Tool Paths
 ##
@@ -51,7 +51,7 @@ TOOLCHAIN ?= gnu
 ##
 # Selected OS
 # bare-matal: mark OS_SEL, support os: un-mark OS_SEL
-OS_SEL ?= 
+OS_SEL ?= freertos
 
 ##
 # Selected MPU
@@ -66,7 +66,7 @@ MPU ?= y
 TRUSTZONE ?= y
 TRUSTZONE_TYPE ?= security
 TRUSTZONE_FW_TYPE ?= 0
-NONTRUSTZONE_SRC_DIR ?= 
+NONTRUSTZONE_SRC_DIR ?= D:\WEII_Workspace_Old\EPII_CM55S_APP_NS_Case4
 
 ##
 # standalone (y==> no bootrom, bootloader) (n ==> have bootrom, bootloader)
@@ -112,6 +112,16 @@ LIB_CV_PREBUILT = 0
 ##
 LIB_AUDIOALGO_PREBUILT = 0
 
+# USING Pre-built Secure crypto library
+# y for enable
+# other for disable
+##
+SUPPORT_SEC_LIB ?= n
+
+# customer name for customer specific API
+# seeed
+##
+CUSTOMER ?= 
 ##
 # Integrate Support
 # CLI_HELLOWORLD_TZ_S_ONLY
@@ -154,9 +164,10 @@ LIB_AUDIOALGO_PREBUILT = 0
 # pmu_sim_dualcore_cm55s_bus_access
 # tz_to_cli_dual_timer
 # dc_scl_sch_tz_s_only
+# pmu_audpre_cm55s_timer2_sample
+# pmu_audvidpre_cm55s_timer2_sample
 ##
-#APP_TYPE = tz_to_cli_dual_pmu
-APP_TYPE = sample_code_app_dualcore_s_only
+APP_TYPE = CLI_PMU_TZ_CM55SS_ONLY
 ### Options above must be added before include options.mk ###
 override EPII_ROOT := $(strip $(subst \,/,$(EPII_ROOT)))
 include $(EPII_ROOT)/options/options.mk

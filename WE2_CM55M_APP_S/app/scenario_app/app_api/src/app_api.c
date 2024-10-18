@@ -1,5 +1,6 @@
 #include "hx_drv_spi.h"
 #include "hx_drv_timer.h"
+#include "hx_drv_scu_export.h"
 
 #ifdef SPI_MASTER_SEND
 #include "spi_master_protocol.h"
@@ -13,8 +14,10 @@
 
 //#include "app_spi_m.h"
 //#include "app_spi_s.h"
-//#include "app_uart.h"
+#include "app_uart.h"
+#if defined(UART_PROTOCOL)
 #include "app_xdma_cfg.h"
+#endif
 
 #ifdef OS_FREERTOS
 #include "FreeRTOS.h"
@@ -85,7 +88,7 @@ int32_t app_spi_write(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 {
     int8_t ret = 0;
 
-    dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d)\n", addr, size, data_type);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d)\n", addr, size, data_type);
 
     #if defined(OS_FREERTOS) && (defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND))
     xSemaphoreTake(mutex_spi,portMAX_DELAY);
@@ -93,11 +96,12 @@ int32_t app_spi_write(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 
     #if defined(SPI_MASTER_SEND)
     ret = app_spi_m_write(g_spi_cfg.mst_id, (uint8_t*)addr, size, data_type);
-    dbg_printf(DBG_LESS_INFO, "app_spi_m_write return %d\n", ret);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_m_write return %d\n", ret);
     #elif defined(SPI_SLAVE_SEND)
     ret = app_spi_s_write((uint8_t*)addr, size, data_type);
-    dbg_printf(DBG_LESS_INFO, "app_spi_s_write return %d\n", ret);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_s_write return %d\n", ret);
     #endif
+    dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d) return %d\n", addr, size, data_type, ret);
 
     #if defined(OS_FREERTOS) && (defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND))
     xSemaphoreGive(mutex_spi);
@@ -207,7 +211,9 @@ void app_gpio_intr_register(HXGPIO gpio_num, HXGPIO_CB_T cb, HXGPIO_IRQ_TRIG_TYP
     
     hx_drv_gpio_set_int_enable(index, 0);
     hx_drv_gpio_set_int_type(index, trig_type);
+#if 0 //test trunk, temporary removed.
 	hx_drv_gpio_set_irq_handle(index, GPIO_IRQ_HANDLE_CLR_INT/*GPIO_IRQ_HANDLE_NONE*/);
+#endif
     hx_drv_gpio_cb_register(index, cb_fun);
     hx_drv_gpio_set_input(index);
     hx_drv_gpio_set_int_enable(index, 1);
@@ -248,6 +254,7 @@ void app_led_blue(uint8_t on)
 /********************** Timer *************************/
 uint32_t app_timer_get_current_time_ms()
 {
+#ifndef OS_FREERTOS
 #define CPU_CLK					(0xffffff+1)
 #define BOARD_SYS_TIMER_US_HZ	(1000000)
 
@@ -261,6 +268,9 @@ uint32_t app_timer_get_current_time_ms()
 	total_us = (uint32_t)((float)tick*((float)BOARD_SYS_TIMER_US_HZ/(float)SystemCoreClock)); // /400
 
     return total_us/1000;
+#else
+    return xTaskGetTickCount();
+#endif
 }
 
 int8_t app_delay_ms(uint32_t delay_ms)
@@ -269,8 +279,15 @@ int8_t app_delay_ms(uint32_t delay_ms)
     return 0;
 }
 
-/********************** yuv422 packed to planar transform*************************/
+/********************** NPU *************************/
+void app_npu_hw_init()
+{
+	hx_drv_scu_set_U55_PORPL(SCU_U55_PORPL_PRIVILEGED);
+	hx_drv_scu_set_u55_state(SCU_U55_STATE_RESET);
+	hx_drv_scu_set_u55_state(SCU_U55_STATE_NORMAL);
+}
 
+/********************** yuv422 packed to planar transform*************************/
 void app_yuv422packed2planar(uint8_t *yuv_packed, app_yuv_planar_t *yuv_planar, uint32_t yuv_img_sz)
 {
     //dbg_printf(DBG_LESS_INFO, "hm0435_cis_yuv422_packed2planar, yuv_img_sz= %d, yuv_packed= 0x%x, yuv_planar= 0x%x\n", yuv_img_sz, yuv_packed, yuv_planar);

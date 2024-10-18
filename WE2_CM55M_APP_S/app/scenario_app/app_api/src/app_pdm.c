@@ -34,20 +34,6 @@ void app_pdm_init(app_pdm_config_t *app_pdm_cfg)
     audio_config_t aud_lib_cfg;
     
 	dbg_printf(DBG_LESS_INFO, "app_pdm_init.\n");
-	
-	#ifdef NSC
-	veneer_sys_set_PB9_pinmux(SCU_PB9_PINMUX_PDM_CLK_1); /* PDM_PIN_CLK*/
-	veneer_sys_set_PB10_pinmux(SCU_PB10_PINMUX_PDM_DATA0_1); /*PDM_PIN_DATA_0*/
-	veneer_sys_set_PB11_pinmux(SCU_PB11_PINMUX_PDM_DATA1_1); /*PDM_PIN_DATA_1*/
-	veneer_sys_set_PC3_pinmux(SCU_PC3_PINMUX_PDM_DATA2); /*PDM_PIN_DATA_2*/
-	veneer_sys_set_PC4_pinmux(SCU_PC4_PINMUX_PDM_DATA3); /*PDM_PIN_DATA_3*/
-	#else
-	hx_drv_scu_set_PB9_pinmux(SCU_PB9_PINMUX_PDM_CLK_1); /*PDM_PIN_CLK*/
-	hx_drv_scu_set_PB10_pinmux(SCU_PB10_PINMUX_PDM_DATA0_1); /*PDM_PIN_DATA_0*/
-	hx_drv_scu_set_PB11_pinmux(SCU_PB11_PINMUX_PDM_DATA1_1); /*PDM_PIN_DATA_1*/
-	hx_drv_scu_set_PC3_pinmux(SCU_PC3_PINMUX_PDM_DATA2); /*PDM_PIN_DATA_2*/
-	hx_drv_scu_set_PC4_pinmux(SCU_PC4_PINMUX_PDM_DATA3); /*PDM_PIN_DATA_3*/
-	#endif
 
     aud_lib_cfg.interface = AUDIO_IF_PDM;
     aud_lib_cfg.rx_mode = AUDIO_DMA; /*AUDIO_INT*/

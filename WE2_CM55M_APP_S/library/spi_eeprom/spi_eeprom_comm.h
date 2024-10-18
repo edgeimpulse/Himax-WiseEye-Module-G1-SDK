@@ -1,6 +1,6 @@
 #ifndef LIBRARY_SPI_EEPROM_COMM_H_
 #define LIBRARY_SPI_EEPROM_COMM_H_
-
+#include <stdio.h>
 #include "dev_common.h"
 #include "hx_drv_dmac.h"
 #include "hx_drv_spi.h"
@@ -12,13 +12,13 @@
 #else
 #include "hx_drv_scu.h"
 #endif
-
+#include "vendor_eeprom_param.h"
 /** 
  * \defgroup SPI EEPRM library
- * \brief This library is based on Winbond W25Q128JW datasheet
+ * \note default flash command table is Winbond 128Mb version
+ * If Winbond 128Mb isn't selected in spi_eeprom.mk, then default flash command will be NULL
+ * Flash command table can be set by using \ref hx_lib_spi_eeprom_set_flash_config or \ref hx_lib_spi_eeprom_read_ID function.
  */
-
-
 #define SPI_EEPROM_XIP_RELATED
 #define SPI_EEPROM_WRITE_RELATED
 #define SPI_EEPROM_READ_RELATED
@@ -27,11 +27,33 @@
 #define SPI_EEPROM_SECTOR_ERASE_RELATED
 
 /**
- * \note if defined this flag, all functions will to set this quad enable bit first
+ * \note if this flag is defined, all functions will to set this quad enable bit first
  */
-//#define XIP_SET_EEPROM_QUAD_MODE_BIT
+#define LIB_SPI_EEPROM_SET_QUAD_MODE_BIT
 
+/**
+ * \note if this flag is defined, erase flash will to clear write protect bit first
+ */
+#define LIB_SPI_EEPROM_SET_W_PROTECT_BIT
+
+/**
+ * \brief if this flag is defined, 
+ *      hx_lib_spi_eeprom_set_flash_config is automatically executed when hx_lib_spi_eeprom_read_ID is used.
+ *      hx_lib_spi_eeprom_read_ID is automatically executed when the spi eeprom is initialized.
+ */
+#define LIB_SPI_EEPROM_AUTO_SET_INST_TABLE
+
+/**
+ * \note This flag must be defined, otherwise spi read/write function will be unable to work.
+ */
 #define LIB_SPI_EEPROM_USE_DMA
+
+/**
+ * \brief This flag is used to spi write/word write function
+ * if this flag is defined, temp buffer size need by spi write function will be smaller
+ * \note only QSPI support
+ */
+// #define LIB_SPI_EEPORM_USE_DMA_LLI_TRANSFER
 
 #ifdef BOOTROM
 #undef SPI_EEPROM_WRITE_RELATED
@@ -41,67 +63,45 @@
 #undef SPI_EEPROM_SECTOR_ERASE_RELATED
 #undef XIP_SET_EEPROM_QUAD_MODE_BIT
 #undef LIB_SPI_EEPROM_USE_DMA
+#undef LIB_SPI_EEPORM_USE_DMA_LLI_TRANSFER
 #endif
 
 #ifdef BOOTLOADER
 #undef SPI_EEPROM_READ_RELATED
 #undef SPI_EEPROM_WORD_W_R_RELATED
 #undef SPI_EEPROM_CHIP_ERASE_ERLATED
+#undef LIB_SPI_EEPORM_USE_DMA_LLI_TRANSFER
 #endif
 
 #ifdef SECONDBOOTLOADER
-#undef SPI_EEPROM_READ_RELATED
+//#undef SPI_EEPROM_READ_RELATED
 #undef SPI_EEPROM_WORD_W_R_RELATED
+//#undef LIB_SPI_EEPORM_USE_DMA_LLI_TRANSFER
+#define LIB_SPI_EEPROM_AUTO_SET_INST_TABLE
 #endif
 
 // only support OSPI QSPI
 typedef void (*spi_eeprom_cb_t)(void);
-
-#define DW_SPI_SPI_EEPROM_WINBOND_CH0 0xEF
-#define DW_SPI_SPI_EEPROM_WINBOND_CH1 0x60
-#define DW_SPI_SPI_EEPROM_WINBOND33V_CH1 0x40
-
-#define DW_SPI_SPI_EEPROM_MXIC_CH0 0xC2
-#define DW_SPI_SPI_EEPROM_GIGADEV_CH0 0xC8
-
-#define DW_SPI_FLASH_WIP_POS 0
-#define DW_SPI_FLASH_WRITE_ENABLE_POS 1
-#define DW_SPI_MXIC_FLASH_QUAD_ENABLE_MASK 0x40
-#define DW_SPI_MXIC_FLASH_QUAD_ENABLE_POS 6
-#define DW_SPI_WINBOND_FLASH_QUAD_ENABLE_MASK 0x02
-#define DW_SPI_WINBOND_FLASH_QUAD_ENABLE_POS 1
-
-#define DW_SPI_FLASH_CMD_WRITE_STATUS 0x01
-#define DW_SPI_FLASH_CMD_WRITE_STATUS2 0x31
-#define DW_SPI_FLASH_CMD_VOLATILE_WRITE 0x50
-#define DW_SPI_FLASH_CMD_SINGLE_WRITE 0x02
-#define DW_SPI_FLASH_CMD_1X_ADDR_QUAD_WRITE 0x32
-#define DW_SPI_FLASH_CMD_QUAD_WRITE 0x38
-#define DW_SPI_FLASH_CMD_SINGLE_READ 0x03
-#define DW_SPI_FLASH_CMD_DUAL_READ_SINGLE_ADDR 0x3B
-#define DW_SPI_FLASH_CMD_DUAL_READ 0xBB
-#define DW_SPI_FLASH_CMD_QUAD_READ 0xEB
-#define DW_SPI_FLASH_CMD_STATUS_CHECK 0x05
-#define DW_SPI_FLASH_CMD_STATUS2_CHECK 0x35
-#define DW_SPI_FLASH_CMD_WRITE_ENABLE 0x06
-#define DW_SPI_FLASH_CMD_ERASE_ALL 0x60
-#define DW_SPI_FLASH_CMD_ERASE_SECTOR			0x20
-#define DW_SPI_FLASH_CMD_ERASE_32KB				0x52
-#define DW_SPI_FLASH_CMD_ERASE_64KB				0xD8
-#define DW_SPI_FLASH_CMD_FLASH_INFO 0x9F
-#define DW_SPI_FLASH_MXIC_PROTECT_MASK 0xBC
-#define DW_SPI_FLASH_WINBOND_PROTECT_MASK 0xFC
-#define DW_SPI_FLASH_WINBOND_PROTECT2_MASK 0x79
-#define DW_SPI_FLASH_GIGADEV_PROTECT_MASK 0x9C
 
 typedef enum CUR_FLASH_TYPE_S
 {
     FLASH_TYPE_NONE = 0,
     FLASH_TYPE_MXIC,
     FLASH_TYPE_WINBOND,
-    FLASH_TYPE_WINBOND_33V,
     FLASH_TYPE_GIGADEV,
 } CUR_FLASH_TYPE_E;
+
+typedef enum CUR_FLASH_SIZE_
+{
+    FLASH_SIZE_NONE = 0,
+    FLASH_SIZE_8Mb = 1,
+    FLASH_SIZE_16Mb = 2,
+    FLASH_SIZE_32Mb = 3,
+    FLASH_SIZE_64Mb = 4,
+    FLASH_SIZE_128Mb = 5 ,
+} CUR_FLASH_SIZE_E;
+
+#define DAFAULT_FALSH_TYPE FLASH_TYPE_WINBOND
 
 typedef enum {
 	FLASH_SECTOR = 0,
@@ -118,6 +118,9 @@ extern "C" {
  * 
  * @param spi_id ID of spi, QSPI/OSPI
  * @return int32_t an error code \headerfile "dev_common.h"
+ * @note if defined \ref SPI_EEPROM_READ_RELATED,it will read flash ID to switch flash configuration,
+ *      otherwise the user needs to set the configuration by \ref hx_lib_spi_eeprom_set_flash_config function.
+ * @return int32_t an error code \headerfile "dev_common.h"
  */
 extern int32_t hx_lib_spi_eeprom_open(USE_DW_SPI_MST_E spi_id);
 
@@ -126,6 +129,8 @@ extern int32_t hx_lib_spi_eeprom_open(USE_DW_SPI_MST_E spi_id);
  * 
  * @param spi_id ID of spi, QSPI/OSPI
  * @param clk_hz the output clock of SPI
+ * @note if defined SPI_EEPROM_READ_RELATED,it will read flash ID to switch flash configuration,
+ *      otherwise the user needs to set the configuration by \ref hx_lib_spi_eeprom_set_flash_config function. 
  * @return int32_t an error code \headerfile "dev_common.h"
  */
 extern int32_t hx_lib_spi_eeprom_open_speed(USE_DW_SPI_MST_E spi_id, uint32_t clk_hz);
@@ -170,6 +175,19 @@ extern int32_t hx_lib_spi_eeprom_2read(USE_DW_SPI_MST_E spi_id, uint32_t flash_a
  * @return int32_t an error code \headerfile "dev_common.h"
  */
 extern int32_t hx_lib_spi_eeprom_4read(USE_DW_SPI_MST_E spi_id, uint32_t flash_addr, uint8_t *data, uint32_t len);
+
+/**
+ * @brief send op command then recvice data from eeprom.
+ * 
+ * @param spi_id  ID of spi, QSPI
+ * @param op Pointer to the data buffer to be written to EEROM device
+ * @param op_len The length of the data that will be writed from the EEPROM. max vaild value:256.
+ * @param data Pointer to the buffer where the received data from EEPROM will be stored
+ * @param len The length of the data that will be received from the EEPROM.
+ * @return int32_t an error code \headerfile "dev_common.h"
+ */
+
+extern int32_t hx_lib_spi_eeprom_Send_Op_Read_Data(USE_DW_SPI_MST_E spi_id, uint8_t *op, uint32_t op_len, uint8_t *data, uint32_t len);
 #endif
 
 #ifdef SPI_EEPROM_WORD_W_R_RELATED
@@ -257,6 +275,28 @@ extern int32_t hx_lib_spi_eeprom_erase_sector(USE_DW_SPI_MST_E spi_id, uint32_t 
 extern int32_t hx_lib_spi_eeprom_enable_XIP(USE_DW_SPI_MST_E spi_id, bool xip_enable,
                                             FLASH_ACCESS_MODE_E xip_mode, bool xip_cont);
 #endif
+
+/**
+ * @brief  set select flash config for specific spi master.
+ * method 1:
+ * when LIB_SPI_EEPROM_USE_SINGLE_FLASH = n and specific vendor and size FLASH must be included in FLASH_SEL
+ * user can use this function to switch specific vendor and size FLASH command table
+ * eg.   hx_lib_spi_eeprom_set_flash_config(USE_DW_SPI_MST_Q, FLASH_TYPE_GIGADEV, FLASH_SIZE_64Mb, NULL);
+ * 
+ * method 2:
+ * wheh user has the user-defined FLASH command table  .
+ * user can use this fuction to set flash conifg by user-defined FLASH command table user.
+ * eg.   
+ *      SPI_EEPROM_PARAM_S flash_command;
+ *      hx_lib_spi_eeprom_set_flash_config(USE_DW_SPI_MST_Q, FLASH_TYPE_NONE, FLASH_SIZE_NONE, &flash_command);
+ * 
+ * @param spi_id ID of spi, only QSPI support
+ * @param flash_type flash vendor 
+ * @param flash_size flash size
+ * @return int32_t int32_t An error code \headerfile "dev_common.h"
+ */
+extern int32_t hx_lib_spi_eeprom_set_flash_config(USE_DW_SPI_MST_E spi_id, 
+                            CUR_FLASH_TYPE_E flash_type, CUR_FLASH_SIZE_E flash_size, SPI_EEPROM_PARAM_S* flash_config);
 
 #ifdef __cplusplus
 }

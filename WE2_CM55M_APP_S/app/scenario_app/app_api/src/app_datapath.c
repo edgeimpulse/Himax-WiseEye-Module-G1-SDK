@@ -17,6 +17,8 @@
 #include "app_datapath.h"
 #include "app_cisdp_cfg.h"
 
+//#define APP_DB_MSG
+
 typedef struct {
     uint32_t frame_width;    /**< image width, assigned by Himax driver */
     uint32_t frame_height;   /**< image height, assigned by Himax driver */
@@ -107,13 +109,15 @@ static void app_dp_check_over_frame_ready(priv_dp_frame_result_t *pframe_result)
                 hx_drv_xdma_get_WDMA2NextFrameIdx(&next_frame_no);
 
                 g_app_dp_cap_set.frame_no = next_frame_no;
-                
+#ifdef APP_DB_MSG
                 dbg_printf(DBG_LESS_INFO, "buffer_no=%u, next_frame_no=%u\n",buffer_no, next_frame_no);
+#endif
                 frame_no = (buffer_no + next_frame_no - 1) % buffer_no;
                 
                 hx_drv_jpeg_get_EncOutRealMEMSize(&jpeg_enc_filesize_real);
+#ifdef APP_DB_MSG
                 dbg_printf(DBG_LESS_INFO, "jpeg_enc_filesize_real=0x%x\n", jpeg_enc_filesize_real);
-                
+#endif
                 hx_drv_jpeg_get_FillFileSizeToMem(frame_no, (uint32_t)g_app_dp_cur_cfg.jpeg_auto_fill_data, &jpeg_enc_filesize);
                 hx_drv_jpeg_get_MemAddrByFrameNo(frame_no, (uint32_t)g_app_dp_cur_cfg.wdma2, &jpeg_enc_addr);
 
@@ -131,9 +135,9 @@ static void app_dp_check_over_frame_ready(priv_dp_frame_result_t *pframe_result)
                     //change value
                     jpeg_enc_filesize = jpeg_enc_filesize_real;
                 }
-                
+#ifdef APP_DB_MSG                
                 dbg_printf(DBG_LESS_INFO, "frame_no=%u, jpeg_size=0x%x,addr=0x%x\n",frame_no,jpeg_enc_filesize,jpeg_enc_addr);
-
+#endif
                 pframe_result->jpeg_address = jpeg_enc_addr;
                 pframe_result->jpeg_size = jpeg_enc_filesize;
                 pframe_result->raw_address = (uint32_t)g_app_dp_cur_cfg.wdma3;
@@ -237,6 +241,14 @@ static void app_dp_check_over_frame_ready(priv_dp_frame_result_t *pframe_result)
                 #endif
                 
             }
+			else if (g_datapath_case == SENSORDPLIB_PATH_INP_HW5x5)
+            {
+            	pframe_result->jpeg_address = 0;
+                pframe_result->jpeg_size = 0;
+                pframe_result->raw_address = (uint32_t)g_app_dp_cur_cfg.wdma3;
+                pframe_result->frame_width = g_app_dp_cap_set.hw55_in_width;
+                pframe_result->frame_height = g_app_dp_cap_set.hw55_in_height;
+			}
 
             //hx_drv_edm_get_frame_count(&af_framecnt, &be_framecnt);
             //dbg_printf(DBG_LESS_INFO, "af_framecnt=%d,be_framecnt=%d\n",af_framecnt,be_framecnt);
@@ -250,22 +262,29 @@ static void app_dp_check_over_frame_ready(priv_dp_frame_result_t *pframe_result)
 }
 static void app_dp_cb(SENSORDPLIB_STATUS_E event)
 {
-    //dbg_printf(DBG_LESS_INFO, "event = %d\n", event);
-    
-    //uint32_t de0_count, de1_count, de2_count;
-    //uint32_t convde_count;
-    //uint16_t af_framecnt;
-    //uint16_t be_framecnt;
-	
-	//hx_drv_edm_get_de_count(0, &de0_count);
-	//hx_drv_edm_get_conv_de_count(&convde_count);
-	//dbg_printf(DBG_LESS_INFO, "de0_count=%d, convde_count=%d\n", de0_count, convde_count);
-	//hx_drv_edm_get_de_count(1, &de1_count);
-	//hx_drv_edm_get_de_count(2, &de2_count);
-	//dbg_printf(DBG_LESS_INFO, "de1_count=%d, de2_count=%d\n", de1_count, de2_count);
-	//hx_drv_edm_get_frame_count(&af_framecnt, &be_framecnt);
-	//dbg_printf(DBG_LESS_INFO, "af_framecnt=%d,be_framecnt=%d\n",af_framecnt,be_framecnt);
-	
+#ifdef APP_DB_MSG
+    dbg_printf(DBG_LESS_INFO, "event = %d\n", event);
+#endif
+    uint32_t de0_count, de1_count, de2_count;
+    uint32_t convde_count;
+    uint16_t af_framecnt;
+    uint16_t be_framecnt;
+
+    hx_drv_edm_get_de_count(0, &de0_count);
+    hx_drv_edm_get_conv_de_count(&convde_count);
+#ifdef APP_DB_MSG
+    dbg_printf(DBG_LESS_INFO, "de0_count=%d, convde_count=%d\n", de0_count, convde_count);
+#endif
+    hx_drv_edm_get_de_count(1, &de1_count);
+    hx_drv_edm_get_de_count(2, &de2_count);
+#ifdef APP_DB_MSG
+    dbg_printf(DBG_LESS_INFO, "de1_count=%d, de2_count=%d\n", de1_count, de2_count);
+#endif
+    hx_drv_edm_get_frame_count(&af_framecnt, &be_framecnt);
+#ifdef APP_DB_MSG
+    dbg_printf(DBG_LESS_INFO, "af_framecnt=%d,be_framecnt=%d\n",af_framecnt,be_framecnt);
+#endif
+
     switch(event)
     {
     case SENSORDPLIB_STATUS_EDM_WDT1_TIMEOUT:
@@ -427,11 +446,50 @@ static void app_dp_init_flag()
     g_first_frame_done = 0;
 }
 
+int8_t app_sensor_init(const app_dp_cfg_t* dp_init_cfg)
+{
+    SWREG_AON_SENSORINIT_E init = SWREG_AON_SENSOR_INIT_NO;
+
+    hx_lib_pm_pmu_dpdone_check(sensordplib_waitpmudmadone);
+    hx_lib_pm_ctrl_fromPMUtoCPU(sensordplib_pmutocpuctrl);
+
+	hx_drv_swreg_aon_get_sensorinit(&init);
+
+	if(init == SWREG_AON_SENSOR_INIT_NO)
+	{
+        int ret = -1;
+
+        if (1 == dp_init_cfg->with_passthru) {
+#ifdef APP_MIPI_CIS
+            ret = app_cisdp_sensor_init_passthru(dp_init_cfg);
+#else
+	    	dbg_printf(DBG_LESS_INFO, "app_sensor_init: with_passthru is for mipi sensor only!\n");
+            ret = -1;
+#endif
+        } else {
+            ret = app_cisdp_sensor_init(dp_init_cfg);
+        }
+
+	    if(ret == 0) //setup sensor interface, sensor register table
+	    {
+	    	app_cisdp_sensor_start(); //streamming on
+	    	hx_drv_swreg_aon_set_sensorinit(SWREG_AON_SENSOR_INIT_YES);
+	    }
+		else
+		{
+	    	dbg_printf(DBG_LESS_INFO, "app_cisdp_sensor_init fail\n");
+	    	APP_BLOCK_FUNC();
+	    }
+	}
+
+    return 0;
+}
+
 int8_t app_dp_init(const app_dp_cfg_t* dp_init_cfg)
 {
-    uint32_t wakeup_event = 0;
-    uint32_t wakeup_event1 = 0;
     
+    //SWREG_AON_SENSORINIT_E init = SWREG_AON_SENSOR_INIT_NO;
+	
     if(dp_init_cfg->wdma1 == 0 && dp_init_cfg->wdma2 == 0 && dp_init_cfg->wdma3 == 0)
     {
         dbg_printf(DBG_LESS_INFO, "app_dp_init: error! wdma need to be setup!\n");
@@ -456,23 +514,13 @@ int8_t app_dp_init(const app_dp_cfg_t* dp_init_cfg)
 
     app_dp_init_flag();
 
-    hx_drv_pmu_get_ctrl(PMU_pmu_wakeup_EVT, &wakeup_event);
-	hx_drv_pmu_get_ctrl(PMU_pmu_wakeup_EVT1, &wakeup_event1);
-    dbg_printf(DBG_LESS_INFO, "WakeupEvt=0x%x\n", wakeup_event);
-    dbg_printf(DBG_LESS_INFO, "WakeupEvt1=0x%x\n", wakeup_event1);
+    app_cisdp_datapath_init(dp_init_cfg); //setup INP
 
-    if(((wakeup_event == PMU_WAKEUP_NONE) && (wakeup_event1 == PMU_WAKEUPEVENT1_NONE)) || 
-		(wakeup_event1 == PMU_WAKEUPEVENT1_DPD_PAD_AON_GPIO_0))
-    {
-        app_cisdp_sensor_init(dp_init_cfg);
-        app_cisdp_sensor_start();
-    }
-    
-    app_cisdp_datapath_init(dp_init_cfg);
-    
     g_app_dp_cur_cfg.init_type = dp_init_cfg->init_type;
     g_app_dp_cur_cfg.sensor_type = dp_init_cfg->sensor_type;
     g_app_dp_cur_cfg.stream_type = dp_init_cfg->stream_type;
+	g_app_dp_cur_cfg.stream_type_aos = dp_init_cfg->stream_type_aos;
+	g_app_dp_cur_cfg.stream_type_nonaos = dp_init_cfg->stream_type_nonaos;
     g_app_dp_cur_cfg.inp_subsample_type = dp_init_cfg->inp_subsample_type;
     g_app_dp_cur_cfg.crop.start_x = dp_init_cfg->crop.start_x;
     g_app_dp_cur_cfg.crop.start_y = dp_init_cfg->crop.start_y;
@@ -640,18 +688,92 @@ int8_t app_dp_encode_jpeg(const app_dp_jpg_enc_t* dp_jpg_enc_settings)
     return API_SUCC;
 }
 
+static void app_dp_start_capture(void)
+{
+	//dbg_printf(DBG_LESS_INFO, "g_first_frame_done=%u\n", g_first_frame_done);
+
+    if(g_first_frame_done == 0)
+    {
+        sensordplib_set_sensorctrl_start();
+    }
+    else
+    {
+        sensordplib_retrigger_capture();
+    }
+}
+
+int8_t app_dp_jpeg_raw_cfg(const app_dp_cap_t* dp_cap_settings)
+{
+	HW5x5_CFG_T hw5x5_cfg;
+    JPEG_CFG_T jpeg_cfg;
+	
+	hx_drv_hw5x5_get_defCfg(&hw5x5_cfg);
+	
+    /* HW5x5 Path */
+    hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
+    /* HW5x5 Color Mode */
+    hw5x5_cfg.demos_color_mode = DP_HW5X5_DEMOS_COLORMODE;
+    hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
+    hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
+    hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    hw5x5_cfg.hw55_in_width = dp_cap_settings->hw55_in_width;
+    hw5x5_cfg.hw55_in_height = dp_cap_settings->hw55_in_height;
+	#if 0
+    hw5x5_cfg.wdma3_ch1_only = (1 == dp_cap_settings->hw55_y_only)?true:false;
+	#else
+	#warning "TEMPORARY COMMENT OUT PMU RELATED CALLS"
+	#endif
+    
+    g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
+    g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    g_app_dp_cap_set.hw55_in_width = dp_cap_settings->hw55_in_width;
+    g_app_dp_cap_set.hw55_in_height = dp_cap_settings->hw55_in_height;
+    g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
+
+    hx_drv_jpeg_get_defCfg(&jpeg_cfg);
+
+    jpeg_cfg.jpeg_path = JPEG_PATH_ENCODER_EN;
+    jpeg_cfg.enc_width = dp_cap_settings->enc_width;
+    jpeg_cfg.enc_height = dp_cap_settings->enc_height;
+    jpeg_cfg.jpeg_enctype = (JPEG_ENC_TYPE_T)dp_cap_settings->jpeg_enctype;
+    jpeg_cfg.jpeg_encqtable = (JPEG_ENC_QTABLE_T)dp_cap_settings->jpeg_encqtable;
+    
+    g_app_dp_cap_set.enc_width = dp_cap_settings->enc_width;
+    g_app_dp_cap_set.enc_height = dp_cap_settings->enc_height;
+    g_app_dp_cap_set.jpeg_enctype = dp_cap_settings->jpeg_enctype;
+    g_app_dp_cap_set.jpeg_encqtable = dp_cap_settings->jpeg_encqtable;
+    
+    g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
+
+    //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
+    sensordplib_set_int_hw5x5_jpeg_wdma23_start_no(hw5x5_cfg, jpeg_cfg, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt, dp_cap_settings->frame_no, app_dp_cb);
+    
+    #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
+    //init hxauotoi2c
+	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
+		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
+    #endif
+    
+    g_datapath_case = SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG;
+
+	g_first_frame_done = 0;
+
+	sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
+
+	return API_SUCC;
+}
+
 int8_t app_dp_capture_frame(const app_dp_cap_t* dp_cap_settings)
 {
-    HW5x5_CFG_T hw5x5_cfg;
-    JPEG_CFG_T jpeg_cfg;
-
     if(g_first_frame_done == 0 ||
         g_datapath_case != SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG ||
         g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no ||
         g_app_dp_cap_set.hw55_crop_stx != dp_cap_settings->hw55_crop_stx ||
         g_app_dp_cap_set.hw55_crop_sty != dp_cap_settings->hw55_crop_sty ||
-        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->enc_width ||
-        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->enc_height ||
+        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->hw55_in_width ||
+        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->hw55_in_height ||
         g_app_dp_cap_set.hw55_path != dp_cap_settings->hw55_path ||
         g_app_dp_cap_set.hw55_y_only != dp_cap_settings->hw55_y_only ||
         g_app_dp_cap_set.enc_width != dp_cap_settings->enc_width ||
@@ -660,95 +782,81 @@ int8_t app_dp_capture_frame(const app_dp_cap_t* dp_cap_settings)
         g_app_dp_cap_set.jpeg_encqtable != dp_cap_settings->jpeg_encqtable)
     {
     	sensordplib_stop_capture();
-		
-        hx_drv_hw5x5_get_defCfg(&hw5x5_cfg);
-        /* HW5x5 Path */
-        hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
-        /* HW5x5 Color Mode */
-        if(dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV420) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV420;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV400) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV422) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV422;
-        } else {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        }
-        hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
-        hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
-        hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
-        hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        hw5x5_cfg.hw55_in_width = dp_cap_settings->enc_width;
-        hw5x5_cfg.hw55_in_height = dp_cap_settings->enc_height;
-#if 0
-        hw5x5_cfg.wdma3_ch1_only = (1 == dp_cap_settings->hw55_y_only)?true:false;
-#else
-    #warning "TEMPORARY COMMENT OUT PMU RELATED CALLS"
-#endif
-        
-        g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
-        g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
-        g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        g_app_dp_cap_set.hw55_in_width = dp_cap_settings->enc_width;
-        g_app_dp_cap_set.hw55_in_height = dp_cap_settings->enc_height;
-        g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
-
-        hx_drv_jpeg_get_defCfg(&jpeg_cfg);
-
-        jpeg_cfg.jpeg_path = JPEG_PATH_ENCODER_EN;
-        jpeg_cfg.enc_width = dp_cap_settings->enc_width;
-        jpeg_cfg.enc_height = dp_cap_settings->enc_height;
-        jpeg_cfg.jpeg_enctype = (JPEG_ENC_TYPE_T)dp_cap_settings->jpeg_enctype;
-        jpeg_cfg.jpeg_encqtable = (JPEG_ENC_QTABLE_T)dp_cap_settings->jpeg_encqtable;
-        
-        g_app_dp_cap_set.enc_width = dp_cap_settings->enc_width;
-        g_app_dp_cap_set.enc_height = dp_cap_settings->enc_height;
-        g_app_dp_cap_set.jpeg_enctype = dp_cap_settings->jpeg_enctype;
-        g_app_dp_cap_set.jpeg_encqtable = dp_cap_settings->jpeg_encqtable;
-        
-        g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
-
-        //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
-        sensordplib_set_int_hw5x5_jpeg_wdma23_start_no(hw5x5_cfg, jpeg_cfg, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt, dp_cap_settings->frame_no, app_dp_cb);
-        
-        #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
-        //init hxauotoi2c
-    	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
-    		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
-        #endif
-        
-        g_datapath_case = SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG;
-
-		g_first_frame_done = 0;
+		app_dp_jpeg_raw_cfg(dp_cap_settings);
     }
 
-    //dbg_printf(DBG_LESS_INFO, "g_first_frame_done=%u\n", g_first_frame_done);
+    app_dp_start_capture();
 
-    if(g_first_frame_done == 0)
-    {
-        sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
-        sensordplib_set_sensorctrl_start();
-    }
-    else
-    {
-        sensordplib_retrigger_capture();
-    }
+    return API_SUCC;
+}
+
+int8_t app_dp_jpeg_cfg(const app_dp_cap_t* dp_cap_settings)
+{
+    HW5x5_CFG_T hw5x5_cfg;
+    JPEG_CFG_T jpeg_cfg;
+	
+    hx_drv_hw5x5_get_defCfg(&hw5x5_cfg);
+	
+    /* HW5x5 Path */
+    hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
+    /* HW5x5 Color Mode */
+    hw5x5_cfg.demos_color_mode = DP_HW5X5_DEMOS_COLORMODE;
+    hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
+    hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
+    hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    hw5x5_cfg.hw55_in_width = dp_cap_settings->hw55_in_width;
+    hw5x5_cfg.hw55_in_height = dp_cap_settings->hw55_in_height;
+
+    g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
+    g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    g_app_dp_cap_set.hw55_in_width = dp_cap_settings->hw55_in_width;
+    g_app_dp_cap_set.hw55_in_height = dp_cap_settings->hw55_in_height;
+    g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
+    
+    hx_drv_jpeg_get_defCfg(&jpeg_cfg);
+
+    jpeg_cfg.jpeg_path = JPEG_PATH_ENCODER_EN;
+    jpeg_cfg.enc_width = dp_cap_settings->enc_width;
+    jpeg_cfg.enc_height = dp_cap_settings->enc_height;
+    jpeg_cfg.jpeg_enctype = (JPEG_ENC_TYPE_T)dp_cap_settings->jpeg_enctype;
+    jpeg_cfg.jpeg_encqtable = (JPEG_ENC_QTABLE_T)dp_cap_settings->jpeg_encqtable;
+    
+    g_app_dp_cap_set.enc_width = dp_cap_settings->enc_width;
+    g_app_dp_cap_set.enc_height = dp_cap_settings->enc_height;
+    g_app_dp_cap_set.jpeg_enctype = dp_cap_settings->jpeg_enctype;
+    g_app_dp_cap_set.jpeg_encqtable = dp_cap_settings->jpeg_encqtable;
+
+    g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
+    
+    //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
+    sensordplib_set_hw5x5_jpeg_wdma2_start_no(hw5x5_cfg, jpeg_cfg, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt, dp_cap_settings->frame_no, app_dp_cb);
+    
+    #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
+    //init hxauotoi2c
+	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
+		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
+    #endif
+    
+    g_datapath_case = SENSORDPLIB_PATH_INP_HW5x5_JPEG;
+
+	g_first_frame_done = 0;
+	
+	sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
 
     return API_SUCC;
 }
 
 int8_t app_dp_capture_jpeg_frame(const app_dp_cap_t* dp_cap_settings)
 {
-    HW5x5_CFG_T hw5x5_cfg;
-    JPEG_CFG_T jpeg_cfg;
-
     if(g_first_frame_done == 0 ||
         g_datapath_case != SENSORDPLIB_PATH_INP_HW5x5_JPEG ||
         g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no ||
         g_app_dp_cap_set.hw55_crop_stx != dp_cap_settings->hw55_crop_stx ||
         g_app_dp_cap_set.hw55_crop_sty != dp_cap_settings->hw55_crop_sty ||
-        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->enc_width ||
-        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->enc_height ||
+        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->hw55_in_width ||
+        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->hw55_in_height ||
         g_app_dp_cap_set.hw55_path != dp_cap_settings->hw55_path ||
         g_app_dp_cap_set.enc_width != dp_cap_settings->enc_width ||
         g_app_dp_cap_set.enc_height != dp_cap_settings->enc_height ||
@@ -756,76 +864,39 @@ int8_t app_dp_capture_jpeg_frame(const app_dp_cap_t* dp_cap_settings)
         g_app_dp_cap_set.jpeg_encqtable != dp_cap_settings->jpeg_encqtable)
     {
     	sensordplib_stop_capture();
-		
-        hx_drv_hw5x5_get_defCfg(&hw5x5_cfg);
-        /* HW5x5 Path */
-        hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
-        /* HW5x5 Color Mode */
-        if(dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV420) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV420;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV400) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV422) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV422;
-        } else {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        }
-        hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
-        hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
-        hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
-        hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        hw5x5_cfg.hw55_in_width = dp_cap_settings->enc_width;
-        hw5x5_cfg.hw55_in_height = dp_cap_settings->enc_height;
-
-        g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
-        g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
-        g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        g_app_dp_cap_set.hw55_in_width = dp_cap_settings->enc_width;
-        g_app_dp_cap_set.hw55_in_height = dp_cap_settings->enc_height;
-        g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
-        
-        hx_drv_jpeg_get_defCfg(&jpeg_cfg);
-
-        jpeg_cfg.jpeg_path = JPEG_PATH_ENCODER_EN;
-        jpeg_cfg.enc_width = dp_cap_settings->enc_width;
-        jpeg_cfg.enc_height = dp_cap_settings->enc_height;
-        jpeg_cfg.jpeg_enctype = (JPEG_ENC_TYPE_T)dp_cap_settings->jpeg_enctype;
-        jpeg_cfg.jpeg_encqtable = (JPEG_ENC_QTABLE_T)dp_cap_settings->jpeg_encqtable;
-        
-        g_app_dp_cap_set.enc_width = dp_cap_settings->enc_width;
-        g_app_dp_cap_set.enc_height = dp_cap_settings->enc_height;
-        g_app_dp_cap_set.jpeg_enctype = dp_cap_settings->jpeg_enctype;
-        g_app_dp_cap_set.jpeg_encqtable = dp_cap_settings->jpeg_encqtable;
-
-        g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
-        
-        //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
-        sensordplib_set_hw5x5_jpeg_wdma2_start_no(hw5x5_cfg, jpeg_cfg, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt, dp_cap_settings->frame_no, app_dp_cb);
-        
-        #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
-        //init hxauotoi2c
-    	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
-    		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
-        #endif
-        
-        g_datapath_case = SENSORDPLIB_PATH_INP_HW5x5_JPEG;
-
-		g_first_frame_done = 0;
+        app_dp_jpeg_cfg(dp_cap_settings);
     }
 
-    //dbg_printf(DBG_LESS_INFO, "g_first_frame_done=%u\n", g_first_frame_done);
-
-    if(g_first_frame_done == 0)
-    {
-        sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
-        sensordplib_set_sensorctrl_start();
-    }
-    else
-    {
-        sensordplib_retrigger_capture();
-    }
+    app_dp_start_capture();
 
     return API_SUCC;
+}
+
+int8_t app_dp_raw_cfg(const app_dp_cap_t* dp_cap_settings)
+{
+    //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
+    
+    #if defined(HM0435) /*yuv422*/
+    sensordplib_set_raw_wdma2_start_no(g_app_dp_cur_cfg.inp_out_width+g_app_dp_cur_cfg.inp_out_width, g_app_dp_cur_cfg.inp_out_height, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt ,dp_cap_settings->frame_no, app_dp_cb);
+    #else /*RGB*/
+    sensordplib_set_raw_wdma2_start_no(g_app_dp_cur_cfg.inp_out_width, g_app_dp_cur_cfg.inp_out_height, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt ,dp_cap_settings->frame_no, app_dp_cb);
+    #endif
+
+    g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
+    
+    #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
+    //init hxauotoi2c
+	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
+		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
+    #endif
+    
+    g_datapath_case = SENSORDPLIB_PATH_INP_WDMA2;
+
+	g_first_frame_done = 0;
+	
+	sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
+
+	return API_SUCC;
 }
 
 int8_t app_dp_capture_raw_frame(const app_dp_cap_t* dp_cap_settings)
@@ -833,39 +904,80 @@ int8_t app_dp_capture_raw_frame(const app_dp_cap_t* dp_cap_settings)
     if(g_first_frame_done == 0 || g_datapath_case != SENSORDPLIB_PATH_INP_WDMA2 || g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no|| g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no)
     {
     	sensordplib_stop_capture();
-		
-        //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
-        
-        #if defined(HM0435) /*yuv422*/
-        sensordplib_set_raw_wdma2_start_no(g_app_dp_cur_cfg.inp_out_width+g_app_dp_cur_cfg.inp_out_width, g_app_dp_cur_cfg.inp_out_height, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt ,dp_cap_settings->frame_no, app_dp_cb);
-        #else /*RGB*/
-        sensordplib_set_raw_wdma2_start_no(g_app_dp_cur_cfg.inp_out_width, g_app_dp_cur_cfg.inp_out_height, g_app_dp_cur_cfg.wdma2_cyclic_buffer_cnt ,dp_cap_settings->frame_no, app_dp_cb);
-        #endif
-
-        g_app_dp_cap_set.frame_no = dp_cap_settings->frame_no;
-        
-        #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
-        //init hxauotoi2c
-    	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
-    		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
-        #endif
-        
-        g_datapath_case = SENSORDPLIB_PATH_INP_WDMA2;
-
-		g_first_frame_done = 0;
+		app_dp_raw_cfg(dp_cap_settings);
     }
 
-    //dbg_printf(DBG_LESS_INFO, "g_first_frame_done=%u\n", g_first_frame_done);
+    app_dp_start_capture();
 
-    if(g_first_frame_done == 0)
+    return API_SUCC;
+}
+
+int8_t app_dp_raw_yuv_cfg(const app_dp_cap_t* dp_cap_settings)
+{
+	HW5x5_CFG_T hw5x5_cfg;
+
+	hx_drv_hw5x5_get_defCfg(&hw5x5_cfg);
+	
+    /* HW5x5 Path */
+    hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
+    /* HW5x5 Color Mode */
+    hw5x5_cfg.demos_color_mode = DP_HW5X5_DEMOS_COLORMODE;
+    hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
+    hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
+    hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    hw5x5_cfg.hw55_in_width = dp_cap_settings->hw55_in_width;
+    hw5x5_cfg.hw55_in_height = dp_cap_settings->hw55_in_height;
+	#if 0
+    hw5x5_cfg.wdma3_ch1_only = (1 == dp_cap_settings->hw55_y_only)?true:false;
+	#else
+	#warning "TEMPORARY COMMENT OUT PMU RELATED CALLS"
+	#endif
+    
+    g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
+    g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
+    g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
+    g_app_dp_cap_set.hw55_in_width = dp_cap_settings->hw55_in_width;
+    g_app_dp_cap_set.hw55_in_height = dp_cap_settings->hw55_in_height;
+    g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
+
+    //hx_dplib_evthandler_register_cb(app_dp_cb, SENSORDPLIB_CB_FUNTYPE_DP);
+    sensordplib_set_hw5x5_wdma3(hw5x5_cfg, app_dp_cb);
+    
+    #if (CIS_ENABLE_HX_AUTOI2C != 0x00)
+    //init hxauotoi2c
+	if(g_app_dp_cur_cfg.init_type != APP_INIT_TYPE_VIDEO_STREAM)
+		app_cisdp_set_hxautoi2c(g_app_dp_cur_cfg.init_type);
+    #endif
+    
+    g_datapath_case = SENSORDPLIB_PATH_INP_HW5x5;
+
+	g_first_frame_done = 0;
+
+	sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
+
+	return API_SUCC;
+}
+
+int8_t app_dp_capture_raw_yuv_frame(const app_dp_cap_t* dp_cap_settings)
+{
+    if(g_first_frame_done == 0 ||
+        g_datapath_case != SENSORDPLIB_PATH_INP_HW5x5 ||
+        //g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no ||
+        g_app_dp_cap_set.hw55_crop_stx != dp_cap_settings->hw55_crop_stx ||
+        g_app_dp_cap_set.hw55_crop_sty != dp_cap_settings->hw55_crop_sty ||
+        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->hw55_in_width ||
+        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->hw55_in_height ||
+        g_app_dp_cap_set.hw55_path != dp_cap_settings->hw55_path ||
+        g_app_dp_cap_set.hw55_y_only != dp_cap_settings->hw55_y_only ||
+        g_app_dp_cap_set.enc_width != dp_cap_settings->enc_width ||
+        g_app_dp_cap_set.enc_height != dp_cap_settings->enc_height)
     {
-        sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
-        sensordplib_set_sensorctrl_start();
+    	sensordplib_stop_capture();
+		app_dp_raw_yuv_cfg(dp_cap_settings);
     }
-    else
-    {
-        sensordplib_retrigger_capture();
-    }
+
+    app_dp_start_capture();
 
     return API_SUCC;
 }
@@ -882,8 +994,8 @@ int8_t app_dp_capture_frame_with_cdm(const app_dp_cap_t* dp_cap_settings)
         g_app_dp_cap_set.frame_no != dp_cap_settings->frame_no ||
         g_app_dp_cap_set.hw55_crop_stx != dp_cap_settings->hw55_crop_stx ||
         g_app_dp_cap_set.hw55_crop_sty != dp_cap_settings->hw55_crop_sty ||
-        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->enc_width ||
-        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->enc_height ||
+        g_app_dp_cap_set.hw55_in_width != dp_cap_settings->hw55_in_width ||
+        g_app_dp_cap_set.hw55_in_height != dp_cap_settings->hw55_in_height ||
         g_app_dp_cap_set.hw55_path != dp_cap_settings->hw55_path ||
         g_app_dp_cap_set.hw55_y_only != dp_cap_settings->hw55_y_only ||
         g_app_dp_cap_set.enc_width != dp_cap_settings->enc_width ||
@@ -927,21 +1039,13 @@ int8_t app_dp_capture_frame_with_cdm(const app_dp_cap_t* dp_cap_settings)
         /* HW5x5 Path */
         hw5x5_cfg.hw5x5_path = DP_HW5X5_PATH;
         /* HW5x5 Color Mode */
-        if(dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV420) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV420;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV400) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        } else if (dp_cap_settings->jpeg_enctype == JPEG_ENC_TYPE_YUV422) {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV422;
-        } else {
-            hw5x5_cfg.demos_color_mode = DEMOS_COLORMODE_YUV400;
-        }
+        hw5x5_cfg.demos_color_mode = DP_HW5X5_DEMOS_COLORMODE;
         hw5x5_cfg.demos_pattern_mode = DP_HW5X5_DEMOS_PATTERN;
         hw5x5_cfg.demos_bndmode = DP_HW5X5_DEMOS_BNDMODE;
         hw5x5_cfg.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
         hw5x5_cfg.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        hw5x5_cfg.hw55_in_width = dp_cap_settings->enc_width;
-        hw5x5_cfg.hw55_in_height = dp_cap_settings->enc_height;
+        hw5x5_cfg.hw55_in_width = dp_cap_settings->hw55_in_width;
+        hw5x5_cfg.hw55_in_height = dp_cap_settings->hw55_in_height;
 #if 0
         hw5x5_cfg.wdma3_ch1_only = (1 == dp_cap_settings->hw55_y_only)?true:false;
 #else
@@ -951,8 +1055,8 @@ int8_t app_dp_capture_frame_with_cdm(const app_dp_cap_t* dp_cap_settings)
         g_app_dp_cap_set.hw55_path = dp_cap_settings->hw55_path;
         g_app_dp_cap_set.hw55_crop_stx = dp_cap_settings->hw55_crop_stx;
         g_app_dp_cap_set.hw55_crop_sty = dp_cap_settings->hw55_crop_sty;
-        g_app_dp_cap_set.hw55_in_width = dp_cap_settings->enc_width;
-        g_app_dp_cap_set.hw55_in_height = dp_cap_settings->enc_height;
+        g_app_dp_cap_set.hw55_in_width = dp_cap_settings->hw55_in_width;
+        g_app_dp_cap_set.hw55_in_height = dp_cap_settings->hw55_in_height;
         g_app_dp_cap_set.hw55_y_only = dp_cap_settings->hw55_y_only;
         
         hx_drv_jpeg_get_defCfg(&jpeg_cfg);
@@ -988,19 +1092,11 @@ int8_t app_dp_capture_frame_with_cdm(const app_dp_cap_t* dp_cap_settings)
         g_datapath_case = SENSORDPLIB_PATH_INT1;
 
         g_first_frame_done = 0;
+
+		sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
     }
 
-    //dbg_printf(DBG_LESS_INFO, "g_first_frame_done=%u\n", g_first_frame_done);
-    
-    if(g_first_frame_done == 0)
-    {
-        sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
-        sensordplib_set_sensorctrl_start();
-    }
-    else
-    {
-        sensordplib_retrigger_capture();
-    }
+    app_dp_start_capture();
 
     return API_SUCC;
 }
@@ -1020,6 +1116,8 @@ int8_t app_dp_get_def_init_cfg(app_dp_cfg_t* dp_init_cfg)
     dp_init_cfg->h_fporch = RX_LBUF_INSERT_H_FPORCH;
     dp_init_cfg->sensor_type = SENCTRL_SENSOR_TYPE;
     dp_init_cfg->stream_type = SENCTRL_STREAM_TYPE;
+	dp_init_cfg->stream_type_aos = SENCTRL_STREAM_TYPE_AOS;
+	dp_init_cfg->stream_type_nonaos = SENCTRL_STREAM_TYPE_NONAOS;
     dp_init_cfg->inp_subsample_type = DP_INP_SUBSAMPLE;
     dp_init_cfg->xshutdown_pin = CISDP_CIS_XHSUTDOWN_PIN;
     #if (IC_VERSION >= 30)

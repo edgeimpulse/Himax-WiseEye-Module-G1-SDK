@@ -27,7 +27,7 @@ extern "C" {
 * Usage-1:  Use AON_GPIO0 as an input pin
 *    Sample code: Initialize GPIO_GROUP_5_AON
 *      /// The pin of AON_GPIO0 is defined by the user application.
-*      hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_AON_GPIO0_2);
+*      hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_AON_GPIO0_2, 1);
 *   
 *      /// Initialize GPIO_GROUP_5_AON
 *      hx_drv_gpio_init(GPIO_GROUP_5, HX_GPIO_GROUP_5_BASE);
@@ -42,7 +42,7 @@ extern "C" {
 * Usage-2:  Use AON_GPIO0 as an input pin with rising edge to trigger interrupt 
 *    Sample code: Initialize GPIO_GROUP_5_AON
 *      /// The pin of AON_GPIO0 is defined by the user application.
-*      hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_AON_GPIO0_2);
+*      hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_AON_GPIO0_2, 1);
 *   
 *      /// Initialize GPIO_GROUP_5_AON
 *      hx_drv_gpio_init(GPIO_GROUP_5, HX_GPIO_GROUP_5_BASE);
@@ -71,7 +71,7 @@ extern "C" {
 * Usage-3  Use GPIO0 as output mode
 *    Sample code: Initialize GPIO_GROUP_0
 *      /// The pin of GPIO0 is defined by the user application.
-*      hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_GPIO0_2);
+*      hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_GPIO0_2, 1);
 *   
 *      /// Initialize GPIO_GROUP_0
 *      hx_drv_gpio_init(GPIO_GROUP_0, HX_GPIO_GROUP_0_BASE);
@@ -231,18 +231,10 @@ typedef enum GPIO_IRQ_TRIG_TYPE_S
 }GPIO_IRQ_TRIG_TYPE_E;
 
 
-typedef enum GPIO_IRQ_HANDLE_S
-{
-    GPIO_IRQ_HANDLE_NONE = 0,       /*!< user can use "hx_drv_gpio_get_int_status & hx_drv_gpio_clr_int_status" to handle gpio interrupt status */
-    GPIO_IRQ_HANDLE_CLR_INT,        /*!< auto clear interrupt status by base fw */
-}GPIO_IRQ_HANDLE_E;
-
-
 /** GPIO configuration **/
 typedef struct GPIO_CFG_S
 {
     gpio_cb_t cb;
-    GPIO_IRQ_HANDLE_E irq_handle;
 } GPIO_CFG_T;
 
 
@@ -444,17 +436,6 @@ bool hx_drv_gpio_get_int_status(GPIO_INDEX_E gpio_idx);
  */
 GPIO_ERROR_E hx_drv_gpio_clr_int_status(GPIO_INDEX_E gpio_idx);
 
-
-/**
- * This function sets the interrupt handle for a specified GPIO pin.
- * 
- * @param gpio_idx GPIO index number, which specifies the GPIO pin to be configured.
- * @param auto_clr_int This parameter is of type GPIO_IRQ_HANDLE_E, which is an enumeration that
- * specifies the interrupt handling mode for the GPIO pin. It can have one of the following values:
- * 
- * @return GPIO_NO_ERROR is being returned.
- */
-GPIO_ERROR_E hx_drv_gpio_set_irq_handle(GPIO_INDEX_E gpio_idx, GPIO_IRQ_HANDLE_E auto_clr_int);
 /** @} */ // end of GPIO group
 
 #ifdef __cplusplus

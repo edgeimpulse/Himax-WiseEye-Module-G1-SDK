@@ -11,6 +11,12 @@
  * \brief	HXAUTOI2C_MST Hardware accelerator Driver Declaration
  * \details Application can use HXAUTOI2C_MST Structure and library to control Hardware\n
  * <pre>
+ * Himax AUTO I2C SPEC:
+ * 1. I2C CLOCK: 100K, 400K, 1M
+ * 2. Max 4 I2C Command
+ * 3. Max 4 data bytes for 1 I2C Command
+ * 4. Source Clock 24M
+ * 5. Each Command and data with delay: 16 bit counter with 1T is 41.666ns
  * For Example
  *
  * </pre>
@@ -397,6 +403,22 @@ HXAUTOI2CHC_ERROR_E hx_drv_hxautoi2c_register_cb(HXAUTOI2CHC_ISREvent_t cb_event
  * \return  HXAUTOI2CHC_ERROR_E
  */
 HXAUTOI2CHC_ERROR_E hx_drv_hxautoi2c_clr_noack_int(HXAUTOI2CHC_INTSTATUS_E intval);
+
+/**
+ * \brief   set HXAUTOI2C_MST Trigger CMD Done interrupt callback
+ *
+ * \param[in]   cb_event    HXAUTOI2C_MST callback function
+ * \return  HXAUTOI2CHC_ERROR_E
+ */
+HXAUTOI2CHC_ERROR_E hx_drv_hxautoi2c_trigcmd_done_register_cb(HXAUTOI2CHC_ISREvent_t cb_event);
+
+/**
+ * \brief   set HXAUTOI2C_MST Stop CMD Done interrupt callback
+ *
+ * \param[in]   cb_event    HXAUTOI2C_MST callback function
+ * \return  HXAUTOI2CHC_ERROR_E
+ */
+HXAUTOI2CHC_ERROR_E hx_drv_hxautoi2c_stopcmd_done_register_cb(HXAUTOI2CHC_ISREvent_t cb_event);
 
 /** @} */
 #endif

@@ -20,8 +20,6 @@
  * \brief	SWREG AON Driver Declaration
  * \details Application can use SW Reg AON Structure to control Hardware\n
  */
-
-
 /**
  * \defgroup	SWREG_AON_DRV_FUNCDLR	SWREG AON Driver Function Declaration
  * \ingroup	SWREG_AON_DRV
@@ -391,6 +389,81 @@ void hx_drv_swreg_aon_set_coldboot_pdvolt(uint8_t volt);
  * \return	void.
  */
 void hx_drv_swreg_aon_get_coldboot_pdvolt(uint8_t *volt);
+
+
+/**
+ * \brief	Set LSC No PLL
+ *
+ * \param[in]	nopll	 PLL or not in LSC
+ * \return	void.
+ */
+void hx_drv_swreg_aon_set_lscnopll(SWREG_AON_LSCPLL_E nopll);
+
+/**
+ * \brief	Get LSC No PLL
+ *
+ * \param[out]	nopll	  PLL or not in LSC
+ * \return	void.
+ */
+void hx_drv_swreg_aon_get_lscnopll(SWREG_AON_LSCPLL_E *nopll);
+
+/**
+ * \brief	Set RC Trim Type
+ *
+ * \param[in]	type	 TRIM Type
+ * \param[in]	trim_val	 TRIM value
+ * \return	void.
+ */
+void hx_drv_swreg_aon_set_rctrim(SWREG_AON_RCTRIM_TYPE_E type, uint8_t trim_val);
+
+/**
+ * \brief	Get RC Trim
+ *
+ * \param[in]	type	 TRIM Type
+ * \param[out]	trim_val	 TRIM value
+ * \return	void.
+ */
+void hx_drv_swreg_aon_get_rctrim(SWREG_AON_RCTRIM_TYPE_E type, uint8_t *trim_val);
+
+/**
+ * \brief	Set DC Trim Volt Reload or not when warm boot
+ *
+ * \param[in]	policy	 Reload Trim DC or not
+ * \return	void.
+ */
+void hx_drv_swreg_aon_set_reload_trimdcvolt(SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_E policy);
+
+/**
+ * \brief	Get DC Trim Volt Reload or not when warm boot
+ *
+ * \param[out]	policy	Reload Trim DC or not
+ * \return	void.
+ */
+void hx_drv_swreg_aon_get_reload_trimdcvolt(SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_E *policy);
+
+/**
+ * \brief	Set Modem OTA flag
+ *
+ * \param[in]	cfg	 Modem OTA flag
+ * \return	void.
+ */
+void hx_drv_swreg_aon_set_modemota_flag(SWREG_AON_MODEMOTA_E cfg);
+
+/**
+ * \brief	Get Modem OTA flag
+ *
+ * \param[out]	cfg	 Modem OTA flag
+ * \return	void.
+ */
+void hx_drv_swreg_aon_get_modemota_flag(SWREG_AON_MODEMOTA_E *cfg);
+
+/**
+ * \brief	Get Firmware Version
+ *
+ * \param[out]	version	 Firmware Version
+ * \return	void.
+ */
+void hx_drv_swreg_aon_get_fw_version(uint32_t *version);
 /** @} */
 
 #endif /* DRIVERS_INC_HX_DRV_SWREG_AON_H_ */

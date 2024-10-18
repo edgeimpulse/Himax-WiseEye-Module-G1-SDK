@@ -7,6 +7,13 @@
 #include "app_pmu.h"
 #include "app_preroll.h"
 
+#ifdef TFLITE_ALGO_ENABLED
+#include "app_algo.h"
+#endif
+#ifdef FLASH_AS_SRAM
+#include "spi_eeprom_comm.h"
+#endif
+
 #include "hx_drv_pmu.h"
 #include "hx_drv_scu_export.h"
 
@@ -41,6 +48,11 @@
 #define SOC_PWR_OFF_MSG         HX_AON_GPIO_0   /*input*/
 #define SOC_READY               HX_AON_GPIO_0   /*input*/
 #define PIR_NOTIFY_PIN          HX_AON_GPIO_0   /*input*/
+#elif defined(HX6538_ISM028_03M)
+#define WRITE_DATA_HAND_SHAKE   HX_AON_GPIO_0  /*output*/
+#define SOC_PWR_OFF_MSG         HX_AON_GPIO_1  /*input*/
+#define SOC_READY               HX_AON_GPIO_1  /*input*/
+#define PIR_NOTIFY_PIN          HX_AON_GPIO_1  /*input*/
 #else
 #define WRITE_DATA_HAND_SHAKE   HX_GPIO_0      /*output*/
 #define SOC_PWR_OFF_MSG         HX_AON_GPIO_1  /*input*/
@@ -148,10 +160,19 @@ void app_init()
     app_dp_cfg_t app_dp_init_cfg = {0};
     APP_SPI_CFG_T spi_cfg = {0};
 
+#ifdef TFLITE_ALGO_ENABLED
+#ifdef FLASH_AS_SRAM
+    flash_init();
+#endif
+    dbg_printf(DBG_LESS_INFO, "app_algo_init...\n");
+    app_algo_init();
+#endif
+
+    /* PINMUX. */
     app_board_pinmux_settings();
 
-#ifdef WAKEUP_SOC
-    hx_drv_scu_set_PB10_pinmux(SCU_PB10_PINMUX_GPIO1);
+#if 0//def WAKEUP_SOC
+    hx_drv_scu_set_PB10_pinmux(SCU_PB10_PINMUX_GPIO1, 1);
     hx_drv_gpio_set_output(GPIO1, GPIO_OUT_LOW);
 #endif
 
@@ -161,11 +182,7 @@ void app_init()
 #endif
     
 #ifdef SPI_SLAVE_SEND /*slave*/
-    #if defined(HX6538_AIoT_EVB_QFN88_V10) || defined(HX6538_AIoT_EVB_LQFP128_V10)
     spi_cfg.slv_handshake_pin = WRITE_DATA_HAND_SHAKE;         /**< handshake gpio pin number*/
-    #else
-    spi_cfg.slv_handshake_pin = WRITE_DATA_HAND_SHAKE;         /**< handshake gpio pin number*/
-    #endif
     dbg_printf(DBG_LESS_INFO, "HX_GPIO_%02x\n", spi_cfg.slv_handshake_pin);
     spi_cfg.slv_handshake_actv_lvl = HX_GPIO_HIGH;     /**< handshake gpio pin active level*/
 
@@ -176,7 +193,13 @@ void app_init()
     app_i2c_cmd_init(USE_DW_IIC_SLV_0);
     app_spi_init(&spi_cfg);
 
+    //
     app_dp_get_def_init_cfg(&app_dp_init_cfg);
+
+    /* Sensor */
+    app_sensor_init(&app_dp_init_cfg);
+
+    /* Datapath. */
     app_dp_init_cfg.wdma1 = (uint32_t)g_wdma1_data;
     app_dp_init_cfg.wdma2 = (uint32_t)g_wdma2_data;
     app_dp_init_cfg.wdma3 = (uint32_t)g_wdma3_data;
@@ -197,6 +220,12 @@ void app_main()
 
     AppCfgCustGpio_t gpio_cfg = {0};
     uint32_t sys_rtc_id = 0;
+
+	#if defined(PMU_SIMO_VOLT)
+	set_simo_0p9v();
+	hx_set_memory(0x56101030,0x00100000);
+	hx_drv_pmu_set_ctrl(PMU_REG_SIMO_ULPSIMO_EN, 0x1);//COT mode
+	#endif
 
 #ifdef WE2_SINGLE_CORE
 	dbg_printf(DBG_LESS_INFO, "CM55M sample_code_app_vidpre_singlecore_s_only\n");
@@ -221,7 +250,7 @@ void app_main()
 
     app_debug_print();
 
-	hx_drv_timer_sensor_stop(); /*TIMER_ID_0*/
+	//hx_drv_timer_sensor_stop(); /*TIMER_ID_0*/
 #ifdef SYS_RTC_MS
     hx_drv_timer_hw_stop(APP_PMU_SYS_RTC_ID); /*TIMER_ID_1*/
 #endif
@@ -229,9 +258,8 @@ void app_main()
 	hx_drv_timer_hw_stop(TIMER_ID_2); /*TIMER_ID_2*/
 	hx_drv_timer_hw_stop(TIMER_ID_3); /*TIMER_ID_3*/
     
-    hx_lib_pm_pmu_dpdone_check(NULL);
-
-    hx_lib_pm_ctrl_fromPMUtoCPU(NULL);
+    hx_lib_pm_pmu_dpdone_check(sensordplib_waitpmudmadone);
+    hx_lib_pm_ctrl_fromPMUtoCPU(sensordplib_pmutocpuctrl);
 
      /* Setup GPIO Interrupts. */
 #if defined(SOC_PWR_OFF_MSG)
@@ -298,27 +326,6 @@ void app_main()
 #else
     app_pmu_enter_sleep1_aos(gpio_cfg, SENSOR_RTC_MS, 0, 1);
 #endif
-}
-
-int8_t app_sys_info_get_formal_version(INFO_FORMAL_VERSION *formal_version)
-{
-    return 0;
-}
-
-int8_t app_sys_info_get_tx_protocol(INFO_TX_PROTOCOL *tx_protocol)
-{
-    tx_protocol->intf_type = TX_IF_SPI_M;
-    tx_protocol->speed = 10000000;
-    tx_protocol->data_types = data_types;
-    return 0;
-}
-
-int8_t app_sys_info_get_raw_setting(INFO_RAW_SETTING *raw_setting)
-{
-    raw_setting->format = RAW_YUV420;
-    raw_setting->width = 640;
-    raw_setting->height = 480;
-    return 0;
 }
 
 typedef enum

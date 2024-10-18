@@ -252,6 +252,11 @@ uint32_t app_timer_get_current_time_ms();
  */
 int8_t app_delay_ms(uint32_t delay_ms);
 
+void app_npu_hw_init();
+
+void app_yuv422packed2planar(uint8_t *yuv_packed, app_yuv_planar_t *yuv_planar, uint32_t yuv_img_sz);
+void app_yuv422packed2planar2(uint8_t *yuv_packed, app_yuv_planar_t *yuv_planar, uint32_t yuv_img_sz);
+
 
 #ifdef __cplusplus
 }

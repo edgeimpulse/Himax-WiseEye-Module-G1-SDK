@@ -24,6 +24,14 @@
 extern "C" {
 #endif
 
+#ifdef EPII_FPGA
+#define CHIPC_VERSION	0x20230428
+#define CHIPD_VERSION	0x20230913
+#else
+#define CHIPC_VERSION	0x8538000C
+#define CHIPD_VERSION	0x8538000D
+#endif
+
 #define SUPPORT_CKGEN		1
 #define SUPPORT_SWRESET		1
 
@@ -65,6 +73,7 @@ typedef enum {
 	SCU_NO_ERROR = 0, /**< No ERROR */
 	SCU_ERROR_INVALID_PARAMETERS, /**< ERROR MSG: Invalid parameters */
 	SCU_UNKNOWN_ERROR, /**< ERROR MSG: UNKNOWN ERROR*/
+	SCU_ILLEGAL_MEMATT, /**< ERROR MSG: illegal Memory Attribute*/
 } SCU_ERROR_E;
 
 /**
@@ -1809,6 +1818,24 @@ typedef enum {
 } SCU_PAD_PULL_SEL_E;
 
 /**
+ * \enum SCU_MEM_ATTR
+ * \brief MEM ARRT
+ */
+typedef enum {
+	SCU_MEM_ATTR_SECURE = 0,
+	SCU_MEM_ATTR_NONSECURE = 1,
+} SCU_MEM_ATTR_E;
+
+/**
+ * \enum SCU_MIPI_CTRL
+ * \brief MIPI Control by CPU or PMU
+ */
+typedef enum {
+	SCU_MIPI_CTRL_CPU = 0,
+	SCU_MIPI_CTRL_PMU = 1,
+} SCU_MIPI_CTRL_E;
+
+/**
  * \struct SCU_PAD_PULL_CFG_T
  * \brief PAD Pull configuration
  */
@@ -1850,8 +1877,8 @@ typedef struct {
 	SCU_PAD_PULL_CFG_T       uart1_rts;
 	SCU_PAD_PULL_CFG_T       sw_data;
 	SCU_PAD_PULL_CFG_T       sw_clk;
-	SCU_PAD_PULL_CFG_T       sen_i2cm_sda;
-	SCU_PAD_PULL_CFG_T       sen_i2cm_scl;
+	SCU_PAD_PULL_CFG_T       i2cm_sda;		// PAD_I2C_MST_SDA (LQFP128)
+	SCU_PAD_PULL_CFG_T       i2cm_scl;		// PAD_I2C_MST_SCL (LQFP128)
 	SCU_PAD_PULL_CFG_T       spis_do;
 	SCU_PAD_PULL_CFG_T       spis_di;
 	SCU_PAD_PULL_CFG_T       spis_sclk;

@@ -63,6 +63,7 @@ typedef enum PMU_CTRL_TYPE_S
 	PMU_REG_SIMO_UVLO_SEL							,
 	PMU_REG_SIMO_ZCD_EN								,
 	PMU_REG_SIMO_MODE_SEL							,
+	PMU_REG_SIMO_AREG1								,
 	/* Register 24h */
 	PMU_REG_SIMO_VOUT12_SEL		        	= 0x2400,
 	PMU_REG_SIMO_VOUT1_SEL							,
@@ -242,6 +243,8 @@ typedef enum PMU_CTRL_TYPE_S
 	PMU_REG_AIP_LV_OFF_HV					= 0xBC00,
 	PMU_REG_AIP_LV_OFF_HV_PMU_SW					,
 	PMU_REG_AIP_LV_OFF_HV_AON_SW					,
+	PMU_REG_HSC_RSTN								,
+	PMU_REG_HSC_EN_SW								,
 #endif
 	/* Register C0h */
 	PMU_REG_PMU_CLK_CTRL					= 0xC000,

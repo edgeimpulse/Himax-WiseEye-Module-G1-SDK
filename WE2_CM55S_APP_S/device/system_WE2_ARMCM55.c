@@ -52,9 +52,9 @@ extern const VECTOR_TABLE_Type __VECTOR_TABLE[496];
 uint32_t SystemCoreClock = SYSTEM_CLOCK;
 
 volatile unsigned long g_time_loop = 0;
-#ifdef SIM_PER
+#if defined(SIM_PER) || defined(SIM_DHRY)
 #else
-#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2)
+#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2) && !defined(RTE_RTOS_FreeRTOS_CORE)
 void SysTick_Handler(void) {
 	if (g_time_loop >= 0xFFFFFFFF)
 		g_time_loop = 0;

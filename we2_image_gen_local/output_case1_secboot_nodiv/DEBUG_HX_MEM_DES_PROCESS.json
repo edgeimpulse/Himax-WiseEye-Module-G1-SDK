@@ -10,35 +10,35 @@
     "part_1": {
         "key_name": "bootloader",
         "pat_type": 0,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\inter_files\\sign_formal_bootloader.bin",
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/inter_files/sign_formal_bootloader.bin",
         "attribute": {
             "att_format": "BLP",
             "att_section_type": 0,
             "att_secheadersize": "0x4AC"
         },
-        "flash_addr": "0x14000",
+        "flash_addr": "0x15000",
         "size": "0x14000",
         "exec_addr": "0x34005000",
-        "crc": "0x113B"
+        "crc": "0x1C54"
     },
     "part_2": {
         "key_name": "2nd_bootloader",
         "pat_type": 1,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\inter_files\\sign_formal_2nd_bootloader.bin",
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/inter_files/sign_formal_2nd_bootloader.bin",
         "attribute": {
             "att_format": "BLP",
             "att_section_type": 0,
             "att_secheadersize": "0x4AC"
         },
         "flash_addr": "0x1000",
-        "size": "0x12000",
+        "size": "0x14000",
         "exec_addr": "0x3401F000",
-        "crc": "0x8FFE"
+        "crc": "0xF4EF"
     },
     "part_3": {
         "key_name": "hx_memory_descriptor",
         "pat_type": 2,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\sign_formal_hx_layout.bin",
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/sign_formal_hx_layout.bin",
         "attribute": {
             "att_format": "BLP",
             "att_section_type": 0,
@@ -46,53 +46,53 @@
         },
         "flash_addr": "0x0",
         "size": "0x1000",
-        "raw_size": "0xDC",
+        "raw_size": "0xE4",
         "sec_size": "0x4AC",
         "raw_align": "0x0",
-        "flash_align": "0xA78",
+        "flash_align": "0xA70",
         "exec_addr": "0x34000000",
         "crc": "0x0"
     },
     "part_4": {
         "key_name": "cm55m_s_application",
         "pat_type": 3,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\inter_files\\sign_formal_cm55m_s_application_p1.img",
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/inter_files/sign_formal_cm55m_s_application_p1.img",
         "attribute": {
             "att_format": "BLP",
             "att_section_type": 1,
             "att_secheadersize": "0x548"
         },
-        "flash_addr": "0x28000",
+        "flash_addr": "0x29000",
         "exec_addr": "0x10000000",
-        "size": "0x23000",
-        "crc": "0x5CF5"
+        "size": "0x43000",
+        "crc": "0xF2B0"
     },
     "part_5": {
         "key_name": "cm55m_s_application",
         "pat_type": 3,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\inter_files\\sign_formal_cm55m_s_application_p2.img",
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/inter_files/sign_formal_cm55m_s_application_p2.img",
         "attribute": {
             "att_format": "BLP",
             "att_section_type": 2,
             "att_secheadersize": "0x514"
         },
-        "flash_addr": "0x4B000",
-        "exec_addr": "0x10022564",
-        "size": "0x2000",
-        "crc": "0xFD83"
+        "flash_addr": "0x6C000",
+        "exec_addr": "0x10019408",
+        "size": "0xC000",
+        "crc": "0x393"
     },
     "part_6": {
-        "key_name": "cm55m_s_application",
-        "pat_type": 65536,
-        "img": "D:\\workspace\\ISM028\\ISM028_SDK\\HimaxWE2_SDK_1.1_SVN180368_ISM028\\we2_image_gen_local\\output_case1_secboot_nodiv\\inter_files\\raw_sec_cm55m_s_application_p3.img",
+        "key_name": "loader_config",
+        "pat_type": 14,
+        "img": "/app/we2_image_gen_local/output_case1_secboot_nodiv/inter_files/sign_formal_loader_config.bin",
         "attribute": {
-            "att_format": "RAW",
-            "att_section_type": 6,
+            "att_format": "BLP",
+            "att_section_type": 0,
             "att_secheadersize": "0x4AC"
         },
-        "flash_addr": "0x180000",
-        "exec_addr": "0x3a180000",
-        "size": "0x6F000",
-        "crc": "0x1550"
+        "flash_addr": "0x78000",
+        "size": "0x1000",
+        "exec_addr": "0x34000800",
+        "crc": "0x9297"
     }
 }

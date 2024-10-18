@@ -12,7 +12,7 @@ OSES_ROOT_DIR = $(EPII_ROOT)/os
 # OS
 # select supported os
 ##
-SUPPORTED_OSES = freertos TFM_NS_RTX TFM_SPM freertos_10_5_1
+SUPPORTED_OSES = freertos TFM_NS_RTX TFM_SPM freertos_10_5_1 rtos2_rtx rtos2_freertos
 
 override OS_SEL := $(strip $(OS_SEL))
 
@@ -87,6 +87,14 @@ else ifeq ($(OS_SEL),TFM_NS_RTX)
 OS_ID = OS_TFM_NS_RTX
 else ifeq ($(OS_SEL),TFM_SPM)
 OS_ID = OS_TFM_SPM
+else ifeq ($(OS_SEL),rtos2_rtx)
+OS_ID = OS_RTOS2_RTX
+override OSES_ROOT_DIR := $(OSES_ROOT_DIR)/rtos2_rtx
+include $(OSES_ROOT_DIR)/rtos2_rtx.mk
+else ifeq ($(OS_SEL),rtos2_freertos)
+OS_ID = OS_RTOS2_FREERTOS
+override OSES_ROOT_DIR := $(OSES_ROOT_DIR)/rtos2_freertos
+include $(OSES_ROOT_DIR)/rtos2_freertos.mk
 endif #end of freertos
 
 ifeq ($(OS_SEL), freertos_10_5_1)
@@ -114,6 +122,9 @@ endif#OS_HAL
 endif
 else
 include $(OSES_ROOT_DIR)/TZ_NonSec/TZ_NonSec.mk
+ifeq ($(OS_HAL), y)
+include $(OSES_ROOT_DIR)/OS_HAL/OS_HAL.mk
+endif#OS_HAL
 endif
 else
 include $(OSES_ROOT_DIR)/NTZ/NTZ.mk

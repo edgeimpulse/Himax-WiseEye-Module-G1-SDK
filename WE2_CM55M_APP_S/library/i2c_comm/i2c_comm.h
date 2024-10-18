@@ -34,13 +34,12 @@
  * [Payload] - 256bytes (MAX)
  * [checksum]- two bytes (ccitt-crc16)
  */
-#define I2CCOMM_HEADER_SIZE     4       // Feature + CMD + PL_LEN
-#define I2CCOMM_COMMAND_DATA_SIZE	4
-#define I2CCOMM_PAYLOAD_SIZE    256
-#define I2CCOMM_CHECKSUM_SIZE   2
+#define I2CCOMM_HEADER_SIZE         4       // Feature(1 bytes) + CMD(1 bytes) + PL_LEN(2 bytes)
+#define I2CCOMM_MAX_PAYLOAD_SIZE    256
+#define I2CCOMM_CHECKSUM_SIZE       2
 #define PADDING_ALIGN_SCB_DCACHE_LINE_SIZE 26
-#define I2CCOMM_MAX_WBUF_SIZE   (I2CCOMM_HEADER_SIZE + I2CCOMM_PAYLOAD_SIZE + I2CCOMM_CHECKSUM_SIZE + PADDING_ALIGN_SCB_DCACHE_LINE_SIZE)
-#define I2CCOMM_MAX_RBUF_SIZE   (I2CCOMM_HEADER_SIZE + I2CCOMM_PAYLOAD_SIZE + I2CCOMM_CHECKSUM_SIZE + PADDING_ALIGN_SCB_DCACHE_LINE_SIZE)
+#define I2CCOMM_MAX_WBUF_SIZE   (I2CCOMM_HEADER_SIZE + I2CCOMM_MAX_PAYLOAD_SIZE + I2CCOMM_CHECKSUM_SIZE + PADDING_ALIGN_SCB_DCACHE_LINE_SIZE)
+#define I2CCOMM_MAX_RBUF_SIZE   (I2CCOMM_HEADER_SIZE + I2CCOMM_MAX_PAYLOAD_SIZE + I2CCOMM_CHECKSUM_SIZE + PADDING_ALIGN_SCB_DCACHE_LINE_SIZE)
 
 // Feature Code
 #define I2CFMT_FEATURE_OFFSET   0
@@ -57,7 +56,6 @@
 
 // Payload buffer
 #define I2CFMT_PAYLOAD_OFFSET           4
-#define I2CFMT_PAYLOAD_SIZE             I2CCOMM_PAYLOAD_SIZE
 
 /****************************************************
  * ENUM Declaration                                 *
@@ -167,6 +165,7 @@ typedef struct
     i2ccomm_cb_t write_cb;
     i2ccomm_cb_t read_cb;
     i2ccomm_cb_t err_cb;
+    i2ccomm_cb_t sta_cb;
 } I2CCOMM_CFG_T;
 
 /** @} */ //I2C_COMM_STRUCT

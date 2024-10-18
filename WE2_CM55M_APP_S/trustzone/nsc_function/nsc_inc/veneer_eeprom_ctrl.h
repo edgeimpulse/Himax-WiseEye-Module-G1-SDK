@@ -45,7 +45,7 @@ int32_t veneer_spi_eeprom_open(VENEER_SPI_EEPROM_E spi_id);
  * \return	.
  */
 int32_t veneer_spi_eeprom_open_speed(VENEER_SPI_EEPROM_E spi_id, uint32_t clk_hz);
-#if 0
+
 /**
  * \brief read the identity of the SPI eeprom
  *
@@ -131,6 +131,7 @@ int32_t veneer_spi_eeprom_write(VENEER_SPI_EEPROM_E spi_id, uint32_t addr, uint8
  */
 int32_t veneer_spi_eeprom_Send_Op_code(VENEER_SPI_EEPROM_E spi_id, uint8_t *data, uint32_t len);
 
+#if 0
 /**
  * \brief chip erase selected eeprom
  *
@@ -138,7 +139,7 @@ int32_t veneer_spi_eeprom_Send_Op_code(VENEER_SPI_EEPROM_E spi_id, uint8_t *data
  * \return	.
  */
 int32_t veneer_spi_eeprom_erase_all(VENEER_SPI_EEPROM_E spi_id);
-
+#endif
 /**
  * \brief sector erase by given flash address
  *
@@ -147,7 +148,7 @@ int32_t veneer_spi_eeprom_erase_all(VENEER_SPI_EEPROM_E spi_id);
  * \return	.
  */
 int32_t veneer_spi_eeprom_erase_sector(VENEER_SPI_EEPROM_E spi_id, uint32_t addr);
-#endif
+
 /**
  * \brief set select eeprom to specific XIP mode. xip_enable- set enable/disable XIP mode. xip_mode- set XIP mode, support dual mode pr quad mode
  *

@@ -60,6 +60,15 @@ typedef enum {
 } SWREG_AON_OTA_E;
 
 /**
+ * \enum SWREG_AON_MODEMOTA_E
+ * \brief SWREG AON Modem OTA
+ */
+typedef enum {
+	SWREG_AON_MODEMOTA_NO_FLAG = 0, /**< Not MODEM OTA flag */
+	SWREG_AON_MODEMOTA_YES_FLAG, /**< MODEM OTA flag */
+} SWREG_AON_MODEMOTA_E;
+
+/**
  * \enum SWREG_AON_LSCCLKCHANGE_REF_E
  * \brief SWREG AON PMU Wake up LSC Clock change reference CM55S Reset flag or SW control flag
  */
@@ -103,6 +112,39 @@ typedef enum {
 	SWREG_AON_COREVOLT_0P9V = 0, /**< 0p9V CoreVoltage for CLK tree*/
 	SWREG_AON_COREVOLT_0P8V, /**< 0p8V CoreVoltage for CLK tree*/
 } SWREG_AON_COREVOLT_E;
+
+/**
+ * \enum SWREG_AON_LSCPLL_E
+ * \brief SWREG LSC PLL
+ */
+typedef enum {
+	SWREG_AON_LSCPLL_YES = 0, /**< LSC PLL if it has PLL*/
+	SWREG_AON_LSCPLL_NO, /**< LSC no PLL if it has PLL*/
+} SWREG_AON_LSCPLL_E;
+
+/**
+ * \enum SWREG_AON_RCTRIM_TYPE_E
+ * \brief SWREG RC TRIM Type
+ */
+typedef enum {
+	SWREG_AON_RCTRIM_RC32K = 0, /**< RC32K Trim*/
+	SWREG_AON_RCTRIM_RC24M, /**< RC24M Trim*/
+	SWREG_AON_RCTRIM_RC96M, /**< RC96M Trim*/
+	SWREG_AON_RCTRIM_RC1K, /**< RC1K Trim*/
+	SWREG_AON_RCTRIM_RC1M, /**< RC1M Trim*/
+	SWREG_AON_RCTRIM_RC48M, /**< RC48M Trim*/
+	SWREG_AON_RCTRIM_RC1M_P2, /**< RC1M Trim Part2*/
+	SWREG_AON_RCTRIM_RC1M_P3 /**< RC1M Trim Part3*/
+} SWREG_AON_RCTRIM_TYPE_E;
+
+/**
+ * \enum SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_E
+ * \brief SWREG Reload Trim DC Voltage or not when warm boot
+ */
+typedef enum {
+	SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_NO = 0, /**< No need Reload Trim DC Volt when WARM BOOT*/
+	SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_YES, /**< LSC no PLL if it has PLL*/
+} SWREG_AON_WARMBOOT_RELOAD_TRIM_DCVOLT_E;
 /** @} */
 
 /**

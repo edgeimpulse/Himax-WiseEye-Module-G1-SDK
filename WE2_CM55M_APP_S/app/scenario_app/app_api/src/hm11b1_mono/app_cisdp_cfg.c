@@ -132,26 +132,11 @@ void app_cisdp_set_hxautoi2c(APP_INIT_TYPE_E type)
 
 int app_cisdp_datapath_init(const app_dp_cfg_t* dp_init_cfg)
 {
-    #if (CIS_ENABLE_MIPI_INF != 0x00)
-    //setup MIPI RX
-	app_set_mipi_csirx_enable();
-    #endif
-    
     if(dp_init_cfg->init_type == APP_INIT_TYPE_VIDEO_STREAM)
     {
-        #if ((CIS_ENABLE_MIPI_INF != 0x00) && (IC_VERSION >= 30))
-        {
-    	    sensordplib_set_sensorctrl_inp_wi_crop_bin(dp_init_cfg->sensor_type, dp_init_cfg->stream_type,
-    			dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type, dp_init_cfg->crop, dp_init_cfg->inp_bin);
-        }
-        #else
-        {
-        	sensordplib_set_sensorctrl_inp(dp_init_cfg->sensor_type, dp_init_cfg->stream_type, 
-                dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type);
-        	hx_drv_inp1bitparser_set_tg2utg(dp_init_cfg->sclk_utg);
-        }
-        #endif
-
+    	sensordplib_set_sensorctrl_inp(dp_init_cfg->sensor_type, dp_init_cfg->stream_type, 
+            dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type);
+    	hx_drv_inp1bitparser_set_tg2utg(dp_init_cfg->sclk_utg);
     }
     else //AOS
     {
@@ -188,7 +173,6 @@ int app_cisdp_sensor_init(const app_dp_cfg_t* dp_init_cfg)
     else
     {
     	dbg_printf(DBG_LESS_INFO, "HM11B1 off by app \n");
-        return -1;
     }
 
     if(dp_init_cfg->init_type == APP_INIT_TYPE_VIDEO_STREAM)
@@ -295,10 +279,6 @@ void app_cisdp_sensor_stop()
     sensordplib_autoi2c_disable();
     dbg_printf(DBG_LESS_INFO, "hxauto i2c disable \n");
 	#endif
-
-    #if (CIS_ENABLE_MIPI_INF != 0x00)
-    app_set_mipi_csirx_disable();
-    #endif
 }
 
 #endif //HM11B1_MONO

@@ -455,7 +455,9 @@
 {HX_CIS_I2C_Action_W, 0x30a8, 0x01},
 {HX_CIS_I2C_Action_W, 0x30b0, 0x03},
 {HX_CIS_I2C_Action_W, 0x3112, 0x04},
+#ifndef HM_INTER_LDO_EN
 {HX_CIS_I2C_Action_W, 0x311a, 0x31},
+#endif
 {HX_CIS_I2C_Action_W, 0x1014, 0x08},
 {HX_CIS_I2C_Action_W, 0x309e, 0x01},
 {HX_CIS_I2C_Action_W, 0x309f, 0x00},

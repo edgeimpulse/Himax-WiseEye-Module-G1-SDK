@@ -77,6 +77,7 @@ typedef struct I2S_CFG_S
     uint32_t                reg_addr;                      /* I2S register base address */
     I2S_AUD_SAMPLE_RATE           sr;
     I2S_AUD_DATA_RES         bit_num;
+    uint8_t                dma_rx_ch;
 } I2S_CFG_T;
 
 /**
@@ -145,6 +146,9 @@ int32_t hx_drv_i2s_rx_read(void *data, uint32_t len);
 /* I2S Driver Interrupt RX Read */
 int32_t hx_drv_i2s_int_rx_read(void *data, uint32_t len);
 
+/* I2S Driver DMA RX Channel */
+void hx_drv_i2s_set_dma_rx_ch(uint8_t dma_ch);
+
 /* I2S Driver DMA RX Read */
 int32_t hx_drv_i2s_dma_rx_read(void *data, uint32_t byte_sz);
 
@@ -153,6 +157,9 @@ int32_t hx_drv_i2s_tx_write(void *data, uint32_t len);
 
 /* I2S Driver Interrupt TX Write */
 int32_t hx_drv_i2s_int_tx_write(void *data, uint32_t len);
+
+/* I2S Driver DMA TX Channel */
+void hx_drv_i2s_set_dma_tx_ch(uint8_t dma_ch);
 
 /* I2S Driver DMA TX Write */
 int32_t hx_drv_i2s_dma_tx_write(void *data, uint32_t byte_sz);

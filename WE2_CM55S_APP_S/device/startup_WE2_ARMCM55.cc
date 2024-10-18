@@ -163,16 +163,6 @@ __NO_RETURN void Reset_Handler(void) {
 	SCB_EnableICache();
 	SCB_EnableDCache();
 
-#if defined (__clang__)
-#elif defined ( __GNUC__ )
-#if defined (__cplusplus)
-    //
-    // Call C++ library initialisation
-    //
-    __libc_init_array();
-#endif
-#endif
-
 	__PROGRAM_START();
 }
 

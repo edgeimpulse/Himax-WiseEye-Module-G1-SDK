@@ -21,14 +21,14 @@ void app_main()
 	
     /*uart pin mux to transmit debug msg. conflict with CM55M spi master/slave.*/
     #if 0
-    hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_UART1_RTS);
-    hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_UART1_CTS);
-    hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_UART1_RX);
-    hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_UART1_TX);
+    hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_UART1_RTS, 1);
+    hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_UART1_CTS, 1);
+    hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_UART1_RX, 1);
+    hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_UART1_TX, 1);
     #endif
 	
-    hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_UART1_RX);
-    hx_drv_scu_set_PB7_pinmux(SCU_PB7_PINMUX_UART1_TX);
+    hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_UART1_RX, 1);
+    hx_drv_scu_set_PB7_pinmux(SCU_PB7_PINMUX_UART1_TX, 1);
     
     dbg_printf(DBG_LESS_INFO, "CM55S sample_code_app_dualcore_s\n");
 	

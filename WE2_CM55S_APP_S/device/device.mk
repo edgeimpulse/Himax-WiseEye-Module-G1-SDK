@@ -5,9 +5,20 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 DEVICE_CSRC_DIR = $(EPII_ROOT)/device
 DEVICE_ASMSRC_DIR = $(EPII_ROOT)/device
-DEVICE_INC_DIR = $(EPII_ROOT)/device  $(EPII_ROOT)/device/inc
+DEVICE_INC_DIR = $(EPII_ROOT)/device  $(EPII_ROOT)/device/inc $(EPII_ROOT)/device/clib
 DEVICE_CXXSRC_DIR = $(EPII_ROOT)/device
 DEVICE_CCSRC_DIR = $(EPII_ROOT)/device
+
+ifeq ($(SEMIHOST), y)
+else
+DEVICE_CSRC_DIR += $(EPII_ROOT)/device/clib
+ifeq ($(strip $(TOOLCHAIN)),arm)
+# from Arm\Packs\Keil\ARM_Compiler\1.7.2\Source\retarget_io.c and add _sys_exit
+DEVICE_CSRC_DIR += $(EPII_ROOT)/device/clib/arm
+else
+DEVICE_CSRC_DIR += $(EPII_ROOT)/device/clib/gnu
+endif
+endif
 
 DEVICE_CSRCS =
 DEVICE_ASMSRCS =

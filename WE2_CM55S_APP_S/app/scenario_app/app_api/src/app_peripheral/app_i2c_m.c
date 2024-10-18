@@ -1,5 +1,3 @@
-#include "dw_iic_hal.h"
-
 #include "WE2_debug.h"
 
 #include "app_api.h"
@@ -45,7 +43,7 @@ static void i2c_mst1_err_callback_fun(void *pcontext)
 
 int8_t app_i2c_mst_init(uint8_t i2c_id, I2C_SPEED_MODE_E speed_mode)
 {
-    uint32_t clock = IIC_SPEED_STANDARD;
+    uint32_t clock = DW_IIC_SPEED_STANDARD;
 
     if(i2c_id < I2C_0_ID || i2c_id > I2C_1_ID)
     {
@@ -70,13 +68,13 @@ int8_t app_i2c_mst_init(uint8_t i2c_id, I2C_SPEED_MODE_E speed_mode)
 
     // i2c set_speed
     if(speed_mode == I2C_SPEED_100K)
-        clock = IIC_SPEED_STANDARD;
+        clock = DW_IIC_SPEED_STANDARD;
     else if(speed_mode == I2C_SPEED_400K)
-        clock = IIC_SPEED_FAST;
+        clock = DW_IIC_SPEED_FAST;
     else if(speed_mode == I2C_SPEED_1M)
-        clock = IIC_SPEED_FASTPLUS;
+        clock = DW_IIC_SPEED_FASTPLUS;
     
-    dev_iic_m[i2c_id]->iic_control(IIC_CMD_MST_SET_SPEED_MODE, (void*)clock);
+    dev_iic_m[i2c_id]->iic_control(DW_IIC_CMD_MST_SET_SPEED_MODE, (void*)clock);
 
     return API_SUCC;
 }

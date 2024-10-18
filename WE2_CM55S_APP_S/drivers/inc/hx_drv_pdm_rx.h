@@ -232,6 +232,7 @@ PDM_ERROR_E hx_drv_pdm_deinit(void);
 
 /**
  * The function initializes PDM transfer and reads data if initialized, otherwise returns an error.
+ * Please remind that this API uses interrupt mode with M55 to move the data from PDM to data buffer
  * 
  * @param data A pointer to the buffer where the received PDM data will be stored.
  * @param size The size parameter is a pointer to a variable that will hold the size of the data to be
@@ -250,7 +251,7 @@ PDM_ERROR_E hx_drv_pdm_init_transfer(uint32_t *data, uint32_t *size);
  * This function performs a single transfer of data from the PDM peripheral to memory using DMA.
  * 
  * @param buf Pointer to the buffer where the received data will be stored.
- * @param block_sz The size of the data block to be transferred in bytes.
+ * @param block_sz The size of the data block to be transferred in bytes. For single DMA transfer size, limitation will be < 8192 Bytes.
  * 
  * @return a PDM_ERROR_E enum value, which could be PDM_ERROR_NOT_INIT, PDM_ERROR_INVALID_PARAMETERS,
  * PDM_UNKNOWN_ERROR, or PDM_NO_ERROR.
@@ -262,11 +263,14 @@ PDM_ERROR_E hx_drv_pdm_dma_single_transfer(void *buf, uint32_t block_sz);
  * This function performs a PDM DMA LLI transfer.
  * 
  * @param buf Pointer to the buffer where the received data will be stored.
- * @param block_num The number of blocks to be transferred in the PDM DMA transfer.
- * @param block_sz The size of each block of data to be transferred in bytes.
+ * @param block_num The number of blocks to be transferred in the PDM DMA transfer. Maximum block number is 256.
+ * @param block_sz The size of each block data to be transferred in bytes. For single DMA transfer size, limitation will be < 8192 Bytes.
  * @param infinite_loop The infinite_loop parameter is a boolean value that determines whether the PDM
  * DMA transfer should loop indefinitely or not. If set to true, the transfer will continue to loop
  * until it is manually stopped. If set to false, the transfer will only occur once.
+ * callback function will be called when transfer finished.
+ * When set infinite_loop to 0, callback happen when transfer finish.
+ * When set infinite_loop to 1, callback will not happen since transfer will looply continue.
  * 
  * @return a PDM_ERROR_E enum value, which could be PDM_ERROR_NOT_INIT, PDM_ERROR_INVALID_PARAMETERS,
  * PDM_UNKNOWN_ERROR, or PDM_NO_ERROR.

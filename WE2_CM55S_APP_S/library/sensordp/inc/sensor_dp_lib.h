@@ -44,8 +44,78 @@
  *				sensordplib_CBEvent_t dplib_cb);
  *	    The datapath related function are non-blocking so you need register callback function in application.
  *	    Then check frame ready event(SENSORDPLIB_STATUS_XDMA_FRAME_READY) if frame ready event is callback you can do CV
+ * Ex5: Setup HIMAX AUTO I2C related API (Optional: only for PMU mode)
+ * 		a.Set Config: sensordplib_autoi2c_cfg(HXAUTOI2CHC_STATIC_CFG_T scfg,
+ * 						HXAUTOI2CHC_INT_CFG_T icfg,
+ * 						HXAUTOI2CHC_CMD_CFG_T trig_cfg,
+ * 						HXAUTOI2CHC_CMD_CFG_T stop_cfg);
  *
- * Ex5: After all setup are ready, there two method for capturing. One is captured without periodical timer. The Other is captured with periodical timer.
+ * 		  scfg.slaveid = CIS_I2C_ID;							//CIS SENSOR I2C ID
+ * 		  scfg.clkdiv = HXAUTOI2C_SCL_CLK_DIV_24;				//I2C CLK divider: Source Frequencu is 24M
+ * 																//			For I2C CLK 1M, set to HXAUTOI2C_SCL_CLK_DIV_240 (24000000 / 24 = 1000000)
+ * 		  scfg.cmdtype = HXAUTOI2CHC_CMD_TRIG_STOP;				// I2C Control CIS SENSOR method:
+ * 																// 			Trig means send i2c cmd to stream on CIS SENSOR
+ * 																// 			Stop means send i2c cmd to stream off CIS SENSOR
+ * 		  scfg.trig_ctrl_sw = HXAUTOI2CHC_CMD_CTRL_BY_HW;		//Trig CMD ctrl setting: set to ctrl by HW
+ * 		  scfg.stop_ctrl_sw = HXAUTOI2CHC_CMD_CTRL_BY_HW;     	//Stop CMD ctrl setting: set to ctrl by HW
+ *
+ *		  //After Trig/Stop CMD, there will be an interrupt to PMU
+ * 		  icfg.trig_int_loc = HXAUTOI2CHC_INT_LOC_AFT_CMD1;     //Trig CMD interrupt to PMU timing
+ * 		  icfg.stop_int_loc = HXAUTOI2CHC_INT_LOC_AFT_CMD1;     //Stop CMD interrupt to PMU timing
+ * 		  icfg.trig_delay = 0;									//delay time before send Trig CMD interrupt to PMU: 1 unit is 1/24M seconds
+ * 		  icfg.stop_delay = 1680;								//delay time before send STOP CMD interrupt to PMU: 1 unit is 1/24M seconds
+ *
+ * 		  trig_cfg.cmd_num = HXAUTOI2CHC_CMD_NUM_1;				//Trig CMD numbers: 1 means 1 I2C CMD to CIS SENSOR
+ * 		  														//                  2 means 2 I2C CMD to CIS SENSOR
+ * 		  trig_cfg.cmd1_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Trig CMD 1 I2C CMD length (bytes count)
+ * 		  trig_cfg.cmd2_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Trig CMD 2 I2C CMD length (bytes count)
+ * 		  trig_cfg.cmd3_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Trig CMD 3 I2C CMD length (bytes count)
+ * 		  trig_cfg.cmd4_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Trig CMD 4 I2C CMD length (bytes count)
+ * 		  trig_cfg.delay01 = 20000;//40000;						//Trig CMD timing: delay before CMD1 out (1 unit is 1/24M seconds)
+ * 		  trig_cfg.delay12 = 0x100;								//Trig CMD timing: delay before CMD2 out (1 unit is 1/24M seconds)
+ * 		  trig_cfg.delay23 = 0x100;								//Trig CMD timing: delay before CMD3 out (1 unit is 1/24M seconds)
+ * 		  trig_cfg.delay34 = 0x100;								//Trig CMD timing: delay before CMD4 out (1 unit is 1/24M seconds)
+ *
+ *  	  stop_cfg.cmd_num = HXAUTOI2CHC_CMD_NUM_1;				//Stop CMD numbers: 1 means 1 I2C CMD to CIS SENSOR
+ * 		  														//                  2 means 2 I2C CMD to CIS SENSOR
+ * 		  stop_cfg.cmd1_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Stop CMD 1 I2C CMD length (bytes count)
+ * 		  stop_cfg.cmd2_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Stop CMD 2 I2C CMD length (bytes count)
+ * 		  stop_cfg.cmd3_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Stop CMD 3 I2C CMD length (bytes count)
+ * 		  stop_cfg.cmd4_byte_num = HXAUTOI2CHC_BYTE_NUM_3;		//Stop CMD 4 I2C CMD length (bytes count)
+ * 		  stop_cfg.delay01 = 0;									//Stop CMD timing: delay before CMD1 out (1 unit is 1/24M seconds)
+ * 		  stop_cfg.delay12 = 0x100;								//Stop CMD timing: delay before CMD2 out (1 unit is 1/24M seconds)
+ * 		  stop_cfg.delay23 = 0x100;								//Stop CMD timing: delay before CMD3 out (1 unit is 1/24M seconds)
+ * 		  stop_cfg.delay34 = 0x100;								//Stop CMD timing: delay before CMD4 out (1 unit is 1/24M seconds)
+ *
+ *
+ * 		b. Set Trig CMD: sensordplib_autoi2c_trigcmd(HXAUTOI2CHC_CMD_T cmd1,
+ * 						  	HXAUTOI2CHC_CMD_T cmd2,
+ * 							HXAUTOI2CHC_CMD_T cmd3,
+ * 							HXAUTOI2CHC_CMD_T cmd4);
+ *
+ *		   //Trig CMD byte value, if need CMD2, CMD3, CMD4, assign value to trig_cmd2 ,trig_cmd3 ,trig_cmd4
+ * 		   trig_cmd1.byte1 = (sensor_default_stream_on[0].RegAddree >> 8 & 0xFF);  	//I2C CMD byte 1 value
+ * 		   trig_cmd1.byte2 = (sensor_default_stream_on[0].RegAddree & 0xFF);		//I2C CMD byte 2 value
+ * 		   trig_cmd1.byte3 = sensor_default_stream_on[0].Value;					 	//I2C CMD byte 3 value
+ * 		   trig_cmd1.byte4 = 0x00;													//I2C CMD byte 4 value
+ *
+ *
+ * 		c. Set Stop CMD: sensordplib_autoi2c_stopcmd(HXAUTOI2CHC_CMD_T cmd1,
+ * 						  	HXAUTOI2CHC_CMD_T cmd2,
+ * 							HXAUTOI2CHC_CMD_T cmd3,
+ * 							HXAUTOI2CHC_CMD_T cmd4);
+ *
+ *		   //Stop CMD byte value, if need CMD2, CMD3, CMD4, assign value to trig_cmd2 ,trig_cmd3 ,trig_cmd4
+ *		   stop_cmd1.byte1 = (sensor_default_stream_off[0].RegAddree >> 8 & 0xFF);	//I2C CMD byte 1 value
+ *		   stop_cmd1.byte2 = (sensor_default_stream_off[0].RegAddree & 0xFF);		//I2C CMD byte 2 value
+ *		   stop_cmd1.byte3 = sensor_default_stream_off[0].Value;					//I2C CMD byte 3 value
+ *		   stop_cmd1.byte4 = 0x00;													//I2C CMD byte 4 value
+ *
+ *
+ *		d. Enable AUTO I2C: sensordplib_autoi2c_enable();
+ *		e. Disable AUTO I2C: sensordplib_autoi2c_disable();
+ *			After PMU mode, back to ALLON mode, need to disable AUTO I2C
+ * Ex6: After all setup are ready, there two method for capturing. One is captured without periodical timer. The Other is captured with periodical timer.
  * 		a. Captured without periodical timer.
  * 		   1. 1st start is start with this API
  * 		      sensordplib_set_sensorctrl_start();
@@ -307,6 +377,16 @@ typedef enum
 	SENSORDPLIB_STATUS_TIMER_FIRE_APP_NOTREADY	= 8,	/*!< Timer Fire but app not ready for frame */
 	SENSORDPLIB_STATUS_TIMER_FIRE_APP_READY		= 9,	/*!< Timer Fire and app ready for frame */
 } SENSORDPLIB_STATUS_E;
+
+/**
+ * \enum SENSORDPLIB_POWERSWITCH_CTRL_E
+ * \brief Power State in DC or control by PMU or CPU
+ */
+typedef enum
+{
+	SENSORDPLIB_POWERSWITCH_CTRL_DC_PMU, /*!< Power State at DC or Power Switch control by PMU */
+	SENSORDPLIB_POWERSWITCH_CTRL_CPU		/*!< Power State control by CPU */
+}SENSORDPLIB_POWERSWITCH_CTRL_E;
 /** @} */
 
 
@@ -488,6 +568,24 @@ void sensordplib_set_raw_wdma2(
 		, sensordplib_CBEvent_t dplib_cb);
 
 /**
+ * \brief	sensor --> INP --> WDMA2 setup
+ *
+ * \param[in]	width	HW-ACC input width
+ * \param[in]	height	HW-ACC input height
+ * \param[in]	cyclic_buffer_cnt: RAW cyclic buffer total slots
+ * \param[in]	cyclic_buffer_start_no: Specific the cyclic buffer index to start putting images.
+ *										Use hx_drv_xdma_get_WDMA2NextFrameIdx to get the start index
+ *										before re-starting the datapath.
+ * \param[in]	dplib_cb	callback function for datapath library callback
+ * \retval	void.
+ */
+void sensordplib_set_raw_wdma2_start_no(
+		uint16_t width, uint16_t height
+		, uint8_t cyclic_buffer_cnt
+		, uint8_t cyclic_buffer_start_no
+		, sensordplib_CBEvent_t dplib_cb);
+
+/**
  * \brief sensor --> INP --> HW5x5 --> WDMA3 setup
  *
  * \param 	hw5x5_cfg	HW5x5 HW-ACC configuration
@@ -587,6 +685,25 @@ void sensordplib_set_hw5x5_jpeg_wdma2(
 		HW5x5_CFG_T hw5x5_cfg
 		, JPEG_CFG_T jpeg_cfg
 		, uint8_t cyclic_buffer_cnt
+		,sensordplib_CBEvent_t dplib_cb);
+
+/**
+ * \brief sensor --> INP --> HW5x5 --> JPEGENC --> WDMA2
+ *
+ * \param[in] hw5x5_cfg: HW5x5 HW-ACC configuration
+ * \param[in] jpeg_cfg: JPEG HW-ACC configuration
+ * \param[in] cyclic_buffer_cnt: JPEG cyclic buffer total slots
+ * \param[in] dplib_cb: callback function for datapath library callback
+ * \param[in] cyclic_buffer_start_no: Specific the cyclic buffer index to start putting images.
+ *									  Use hx_drv_xdma_get_WDMA2NextFrameIdx to get the start index
+ *									  before re-starting the datapath.
+ * \retval void.
+ */
+void sensordplib_set_hw5x5_jpeg_wdma2_start_no(
+		HW5x5_CFG_T hw5x5_cfg
+		, JPEG_CFG_T jpeg_cfg
+		, uint8_t cyclic_buffer_cnt
+		, uint8_t cyclic_buffer_start_no
 		,sensordplib_CBEvent_t dplib_cb);
 
 /**
@@ -776,6 +893,33 @@ void sensordplib_set_INT1_HWACC(
  * \brief sensor --> datapath INT1 setup
  *
  * Sensor --> INP --> HW2x2 --> CDM --> WDMA1
+ * Sensor --> INP --> HW5x5 --> JPEG Enc --> WDMA2
+ * Sensor --> INP --> HW5x5 --> WDMA3
+ *
+ * \param[in] hw2x2_cfg: HW2x2 HW-ACC configuration
+ * \param[in] cdm_cfg: CDM HW-ACC configuration
+ * \param[in] hw5x5_cfg: HW5x5 HW-ACC configuration
+ * \param[in] jpeg_cfg: JPEG Encoder HW-ACC configuration
+ * \param[in] cyclic_buffer_cnt: JPEG cyclic buffer total slots
+ * \param[in] cyclic_buffer_start_no: Specific the cyclic buffer index to start putting images.
+ *									  Use hx_drv_xdma_get_WDMA2NextFrameIdx to get the start index
+ *									  before re-starting the datapath.
+ * \param[in] dplib_cb: callback function for datapath library callback
+ * \retval void.
+ */
+void sensordplib_set_INT1_HWACC_start_no(
+		HW2x2_CFG_T hw2x2_cfg,
+		CDM_CFG_T cdm_cfg,
+		HW5x5_CFG_T hw5x5_cfg,
+		JPEG_CFG_T jpeg_cfg,
+		uint8_t cyclic_buffer_cnt,
+		uint8_t cyclic_buffer_start_no,
+		sensordplib_CBEvent_t dplib_cb);
+
+/**
+ * \brief sensor --> datapath INT1 setup
+ *
+ * Sensor --> INP --> HW2x2 --> CDM --> WDMA1
  * Sensor --> INP --> HW5x5(RGB) --> JPEG Enc --> WDMA2
  * Sensor --> INP --> HW5x5(RGB) --> WDMA3
  *
@@ -867,6 +1011,28 @@ void sensordplib_set_int_hw5x5_jpeg_wdma23(
 		HW5x5_CFG_T hw5x5_cfg,
 		JPEG_CFG_T jpeg_cfg,
 		uint8_t cyclic_buffer_cnt,
+		sensordplib_CBEvent_t dplib_cb);
+
+/**
+ * \brief sensor --> datapath INT4_Txx setup
+ *
+ * Sensor --> INP --> HW5x5 --> JPEG Enc
+ * Sensor --> INP --> HW5x5 --> WDMA3
+ *
+ * \param[in] hw5x5_cfg: HW5x5 HW-ACC configuration
+ * \param[in] jpeg_cfg: JPEG Enc HW-ACC configuration
+ * \param[in] cyclic_buffer_cnt: JPEG cyclic buffer total slots
+ * \param[in] cyclic_buffer_start_no: Specific the cyclic buffer index to start putting images.
+ *									  Use hx_drv_xdma_get_WDMA2NextFrameIdx to get the start index
+ *									  before re-starting the datapath.
+ * \param[in] dplib_cb: callback function for datapath library callback
+ * \retval void.
+ */
+void sensordplib_set_int_hw5x5_jpeg_wdma23_start_no(
+		HW5x5_CFG_T hw5x5_cfg,
+		JPEG_CFG_T jpeg_cfg,
+		uint8_t cyclic_buffer_cnt,
+		uint8_t cyclic_buffer_start_no,
 		sensordplib_CBEvent_t dplib_cb);
 
 /**
@@ -1354,6 +1520,14 @@ void sensordplib_autoi2c_disable(void);
 void sensordplib_csirx_enable(uint8_t lane_nb);
 
 /**
+ * \brief Sensor DP library CSIRX(MIPIRX) ENABLE PATH THROUGH ONLY
+ *
+ * \param[in] lane_nb	 	MIPI CSIX LANE number
+ * \retval void.
+ */
+void sensordplib_csirx_enable_path_through_only(uint8_t lane_nb);
+
+/**
  * \brief Sensor DP library CSIRX(MIPIRX) DISABLE
  *
  * \retval void.
@@ -1441,6 +1615,22 @@ void sensordplib_csirx_set_fifo_fill(uint16_t fifo_fill);
 void sensordplib_csirx_get_fifo_fill(uint16_t *fifo_fill);
 
 /**
+ * \brief Sensor DP library CSIRX(MIPI RX) Set LANE SWAP Enable
+ *
+ * \param[in] enable	 	LANE SWAP enable
+ * \retval void.
+ */
+void sensordplib_csirx_set_lnswap_enable(uint8_t enable);
+
+/**
+ * \brief Sensor DP library CSIRX(MIPI RX) Get LANE SWAP Enable
+ *
+ * \param[out] enable	 	LANE SWAP enable
+ * \retval void.
+ */
+void sensordplib_csirx_get_lnswap_enable(uint8_t *enable);
+
+/**
  * \brief Sensor DP library CSIRX(MIPI TX) ENABLE
  *
  * \param[in] lane_nb	 	CSITX lane number
@@ -1521,6 +1711,21 @@ void sensordplib_csitx_set_pixel_depth(uint8_t depth);
  * \retval void.
  */
 void sensordplib_csitx_get_pixel_depth(uint8_t *depth);
+
+/**
+ * \brief Sensor DP library INP set crop area
+ *
+ * \param[in] crop	 	crop area start and last point
+ * \retval void.
+ */
+void sensordplib_inp_set_crop_area(INP_CROP_T crop);
+/**
+ * \brief Sensor DP library Power State control by PMU or CPU
+ *
+ * \param[in] ctrl	 	Power State control by PMU or CPU
+ * \retval void.
+ */
+void sensordplib_set_power_switch(SENSORDPLIB_POWERSWITCH_CTRL_E ctrl);
 
 /** @} */
 #ifdef __cplusplus

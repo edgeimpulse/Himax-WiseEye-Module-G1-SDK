@@ -44,6 +44,10 @@ typedef enum PM_ERROR_S
 	PM_ERROR_INVALID_PARAMETERS        	= 4,	/**< ERROR MSG: Invalid parameters */
 	PM_ERROR_NULL_POINTER				= 5,	/**< ERROR MSG: NULL pointer */
  	PM_UNKNOWN_ERROR      				= 6,	/**< ERROR MSG: UNKNOWN ERROR*/
+ 	PM_WARM_NODP_INIT      				= 7,	/**< ERROR MSG: NO DP INIT*/
+ 	PM_WARM_NO_PMUTOCPU      				= 8,	/**< ERROR MSG: NO DP PMU TO CPU*/
+ 	PM_WARM_NO_WAITPMUDONE      				= 9,	/**< ERROR MSG: Wait PMU Done*/
+ 	PM_ERROR_PLL_LOCK_FAIL      				= 10,	/**< ERROR MSG: PLL Lock fail*/
 } PM_ERROR_E;
 
 /**
@@ -58,6 +62,7 @@ typedef enum PM_CFG_PWR_MODE_S
 	PM_MODE_PS_VID_ONLY_PREROLLING,		/**< Power State Video Only Prerolling**/
 	PM_MODE_PS_AUD_ONLY_PREROLLING,		/**< Power State Audio Only Prerolling**/
 	PM_MODE_PS_VIDAUD_PREROLLING,		/**< Power State Video & Audio Prerolling**/
+	PM_MODE_PS_SCL_RC9648_CPU,		/**< Power State SCL RC9648 control by CPU**/
 } PM_CFG_PWR_MODE_E;
 
 
@@ -68,8 +73,10 @@ typedef enum PM_CFG_PWR_MODE_S
 typedef enum PM_CFG_DCDC_MODE_S
 {
 	PM_CFG_DCDC_MODE_OFF = 0,	/**< DCDC OFF**/
-	PM_CFG_DCDC_MODE_AON_GPIO0 = 1,		/**< DCDC Switch output AON_GPIO0**/
-	PM_CFG_DCDC_MODE_VMUTE = 2,		/**< DCDC Switch output VMUTE**/
+	PM_CFG_DCDC_MODE_AON_GPIO0 = 1,		/**< DCDC Switch output AON_GPIO0(PA0 High Level Power off. Low Level power On)**/
+	PM_CFG_DCDC_MODE_VMUTE = 2,		/**< DCDC Switch output VMUTE(PA1 High Level Power off. Low Level power On)**/
+	PM_CFG_DCDC_MODE_AON_GPIO0_HIGHPOWON = 3,		/**< DCDC Switch output AON_GPIO0(PA0 High Level Power on. Low Level power Off)**/
+	PM_CFG_DCDC_MODE_VMUTE_HIGHPOWON = 4,		/**< DCDC Switch output VMUTE(PA1 High Level Power on. Low Level power Off)**/
 } PM_CFG_DCDC_MODE_E;
 
 /**
@@ -197,6 +204,15 @@ typedef enum PM_CLK_PARA_CTRL_S{
 	PM_CLK_PARA_CTRL_BYPMLIB = 0x0,	/**< PMU Clock PARA control by PMU lib**/
 	PM_CLK_PARA_CTRL_BYAPP = 0x1,	/**< PMU Clock PARA control by APP**/
 }PM_CLK_PARA_CTRL_E;
+
+/**
+ * \enum PM_MCLK_CTRL_E
+ * \brief PMU MCLK control by PMU or CPU
+ */
+typedef enum PM_MCLK_CTRL_S{
+	PM_MCLK_CTRL_BYPMU = 0x0,	/**< PMU MCLK control by PMU**/
+	PM_MCLK_CTRL_BYCPU = 0x1,	/**< PMU MCLK control by CPU**/
+}PM_MCLK_CTRL_E;
 /** @} */
 
 /****************************************************
@@ -234,6 +250,7 @@ typedef struct PM_DPD_CFG_S{
 	PM_IP_INT_MASK_E		pmu_pad_pa0_mask;	/**< PMU PAD PA0 Interrupt Mask DPD Use**/
 	PM_IP_INT_MASK_E		pmu_pad_pa1_mask;	/**< PMU PAD PA1 Interrupt Mask DPD Use**/
 	PM_CFG_DCDC_MODE_E		pmu_dcdc_outpin;	/**< PMU DCDC output pin **/
+	PMU_DPD_PA01_GPIO_POL_WAKEUP_E gpio_wakeup_pol;/**< PMU GPIO Wakeup Polarity **/
 	uint8_t 	support_debugdump;			/**< Support debug register dump**/
 }PM_DPD_CFG_T;
 
@@ -352,7 +369,23 @@ typedef struct PM_PD_VIDAUDPRE_CFG_S{
 	PMU_MIPI_LANE_E mipi_lane_en;		/**< PMU MIPI Lane Enable **/
 	PM_SENSOR_TIMING_E sensor_type;/**< Sensor Timing Type **/
 	uint8_t 	support_debugdump;			/**< Support debug register dump**/
+	PM_MCLK_CTRL_E mclk_ctrl; /**< MCLK control**/
 }PM_PD_VIDAUDPRE_CFG_T;
+
+/**
+ * \struct PM_VIDPRE_CM55S_CFG_T
+ * \brief Power manager configuration for video pre-rolling by CM55S
+ */
+typedef struct PM_VIDPRE_CM55S_CFG_S{
+	PM_WARMBOOT_SPEED_T 	bootromspeed;       /**< bootrom Speed **/
+	SWREG_AON_PMUWAKE_CM55S_RERESET_E cm55s_reset;	/**< CM55Reset when warmboot **/
+	PM_MEM_RET_E 	tcm_retention;			/**< CM55M TCM Retention**/
+	PM_MEM_RET_E 	hscsram_retention[4];	/**< HSC SRAM Retention**/
+	PM_MEM_RET_E 	lscsram_retention;		/**< LSC SRAM Retention**/
+	SWREG_AON_RETENTION_CFG_T 	skip_bootflow;			/**< Skip Boot Flow**/
+	PM_CFG_DCDC_MODE_E		pmu_dcdc_outpin;	/**< PMU DCDC output pin **/
+	uint8_t 	support_debugdump;			/**< Support debug register dump**/
+}PM_VIDPRE_CM55S_CFG_T;
 
 /**
  * \brief Sensor DP library PMU to CPU control

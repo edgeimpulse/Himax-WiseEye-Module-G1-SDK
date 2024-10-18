@@ -50,6 +50,30 @@ void hx_lib_image_rescale(
 void hx_lib_image_resize_helium(uint8_t* im, uint8_t* resized, int input_w, int input_h, int channels, int output_w, int output_h, float w_scale, float h_scale);
 
 /**
+ * @brief Scale an input image to the desired dimension. using Helium optimize.
+ * It's better to use this function to zoom out image.
+ * Input image format: [[BBB...],[GGG...],[BBB...]]
+ * Output image format: [[rgb], [rgb], [rgb],...]
+ * @limit: The weight of resized image must be multiples of 4.
+ * @suggest: 
+ *          float w_scale = (float)(input_w - 1) / (output_w - 1);
+ *          float h_scale = (float)(input_h - 1) / (output_h - 1);
+ * 
+ * @param[in] im input image address
+ * @param[out] resized  output image address
+ * @param[in] input_w  the weight of input image
+ * @param[in] input_h  the hight of input image
+ * @param[in] channels the channels of input image
+ * @param[in] output_w  the weight of output image
+ * @param[in] output_h the hight of output image
+ * @param[in] w_scale scale factor along the horizontal axis; must be non-zero
+ * @param[in] h_scale scale factor along the vertical axis; must be non-zero
+ */
+void hx_lib_image_resize_BGR8U3C_to_RGB24_helium(uint8_t* im, uint8_t* resized, 
+                                        int input_w, int input_h, int channels, 
+                                        int output_w, int output_h, float w_scale, float h_scale);
+
+/**
  * @brief Extract a region from a given image. using Helium optimize.
  * 
  * @param[in] im input image address

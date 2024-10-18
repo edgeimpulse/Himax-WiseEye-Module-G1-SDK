@@ -1,7 +1,9 @@
+#include "WE2_debug.h"
 #include "common.h"
 #include "hx_drv_CIS_common.h"
 #include "hx_drv_pmu.h"
 #include "sensor_dp_lib.h"
+#include "i2c_comm.h"
 //#include "bypass_sensor_reg.h"
 
 /****************************************************
@@ -12,10 +14,28 @@
 #define DATA_SFT_OFFSET_16      16
 #define DATA_SFT_OFFSET_24      24
 
-// Command process for FEATURE:I2CCOMM_SENSOR_REG_ACCESS
-void i2ccomm_cmd_process_sensor_reg_rw(void)
+#define I2CCOMM_GPIO_CMD_PAYLOAD_GET_VAL    1
+#define I2CCOMM_SENSOR_CMD_PAYLOAD_GET_VAL  1
+
+
+/**
+ * \enum I2CCOMM_SENSOR_CMD_E
+ * \brief this enumeration use in i2c communication library, define the supported sensor register r/w command.
+ */
+typedef enum
 {
-#if 0
+    I2CCOMM_CMD_SENSOR_REG_SET = 0, /**< Sensor Register CMD: set register */
+    I2CCOMM_CMD_SENSOR_REG_GET,     /**< Sensor Register CMD: get value */
+    I2CCOMM_CMD_SENSOR_MAX
+} I2CCOMM_SENSOR_CMD_E;
+
+
+static uint8_t gWrite_buf[I2CCOMM_MAX_RBUF_SIZE];
+
+
+// Command process for FEATURE:I2CCOMM_SENSOR_REG_ACCESS
+void i2ccomm_cmd_process_sensor_reg_rw(uint8_t *gRead_buf)
+{
     int retval = 0;
     unsigned char cmd;
     unsigned short addr;
@@ -69,12 +89,12 @@ void i2ccomm_cmd_process_sensor_reg_rw(void)
             }
 
             // enable write process for i2c master read command
-            hx_lib_i2ccomm_enable_write(gWrite_buf);
+            hx_lib_i2ccomm_enable_write(USE_DW_IIC_SLV_0, gWrite_buf);
             break;
         default:
             break;
     }
 
     sensordplib_set_mclkctrl_xsleepctrl_bySCMode();
-#endif    
 }
+

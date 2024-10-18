@@ -14,8 +14,12 @@
 //#include "app_spi_m.h"
 //#include "app_spi_s.h"
 //#include "app_uart.h"
+//#include "app_xdma_cfg.h"
 
 #ifdef OS_FREERTOS
+#include "FreeRTOS.h"
+#include "semphr.h"
+
 #if defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND)
 SemaphoreHandle_t mutex_spi = NULL;
 #elif defined(UART_PROTOCOL)
@@ -81,7 +85,7 @@ int32_t app_spi_write(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 {
     int8_t ret = 0;
 
-    dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d)\n", addr, size, data_type);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d)\n", addr, size, data_type);
 
     #if defined(OS_FREERTOS) && (defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND))
     xSemaphoreTake(mutex_spi,portMAX_DELAY);
@@ -89,11 +93,12 @@ int32_t app_spi_write(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 
     #if defined(SPI_MASTER_SEND)
     ret = app_spi_m_write(g_spi_cfg.mst_id, (uint8_t*)addr, size, data_type);
-    dbg_printf(DBG_LESS_INFO, "app_spi_m_write return %d\n", ret);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_m_write return %d\n", ret);
     #elif defined(SPI_SLAVE_SEND)
     ret = app_spi_s_write((uint8_t*)addr, size, data_type);
-    dbg_printf(DBG_LESS_INFO, "app_spi_s_write return %d\n", ret);
+    //dbg_printf(DBG_LESS_INFO, "app_spi_s_write return %d\n", ret);
     #endif
+    dbg_printf(DBG_LESS_INFO, "app_spi_write(addr = 0x%08x, size = %d, data_type = %d) return %d\n", addr, size, data_type, ret);
 
     #if defined(OS_FREERTOS) && (defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND))
     xSemaphoreGive(mutex_spi);
@@ -106,7 +111,7 @@ int32_t app_spi_write(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 /********************** UART *************************/
 #if defined(UART_PROTOCOL)
 static uint8_t tx_header[7];
-#define BOARD_COMMAND_UART_ID UART_0_ID
+#define BOARD_COMMAND_UART_ID UART_1_ID
 int32_t app_uart_tx(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 {
     int32_t ret = 0;
@@ -124,10 +129,17 @@ int32_t app_uart_tx(uint32_t addr, uint32_t size, SPI_CMD_DATA_TYPE data_type)
 	tx_header[5] = (size>>16)&0xff;
 	tx_header[6] = (size>>24)&0xff;
 
-    ret = app_uart_write(BOARD_COMMAND_UART_ID, tx_header, 7);
-    //dbg_printf(DBG_LESS_INFO, "app_uart_write(header) return %d\n", ret);
+    ret = app_uart_write(BOARD_COMMAND_UART_ID, tx_header, sizeof(tx_header));
+    dbg_printf(DBG_LESS_INFO, "app_uart_write(header) return %d\n", ret);
+	hx_InvalidateDCache_by_Addr((void *)tx_header, sizeof(tx_header));
+	
     ret = app_uart_write(BOARD_COMMAND_UART_ID, (uint8_t*)addr, size);
-    dbg_printf(DBG_LESS_INFO, "app_uart_write(payload) return %d\n", ret);  
+    dbg_printf(DBG_LESS_INFO, "app_uart_write(payload) return %d\n", ret);
+	
+	if(data_type == DATA_TYPE_JPG)
+		hx_InvalidateDCache_by_Addr((void *)addr, WDMA2_SLOT_SIZE);
+	else if(data_type == DATA_TYPE_RAW_IMG)
+		hx_InvalidateDCache_by_Addr((void *)addr, WDMA3_SIZE);
     
     #if defined(OS_FREERTOS) && defined (UART_PROTOCOL)
     xSemaphoreGive(mutex_uart);
@@ -196,7 +208,9 @@ void app_gpio_intr_register(HXGPIO gpio_num, HXGPIO_CB_T cb, HXGPIO_IRQ_TRIG_TYP
     
     hx_drv_gpio_set_int_enable(index, 0);
     hx_drv_gpio_set_int_type(index, trig_type);
+#if 0 //test trunk, temporary removed.
 	hx_drv_gpio_set_irq_handle(index, GPIO_IRQ_HANDLE_CLR_INT/*GPIO_IRQ_HANDLE_NONE*/);
+#endif
     hx_drv_gpio_cb_register(index, cb_fun);
     hx_drv_gpio_set_input(index);
     hx_drv_gpio_set_int_enable(index, 1);
@@ -237,12 +251,25 @@ void app_led_blue(uint8_t on)
 /********************** Timer *************************/
 uint32_t app_timer_get_current_time_ms()
 {
+#define CPU_CLK					(0xffffff+1)
+#define BOARD_SYS_TIMER_US_HZ	(1000000)
 
+	uint32_t total_us;
+	uint32_t systick;
+	uint32_t loop_cnt;
+	uint32_t tick;
+
+	SystemGetTick(&systick, &loop_cnt);
+	tick = (CPU_CLK-systick) + (loop_cnt * CPU_CLK);
+	total_us = (uint32_t)((float)tick*((float)BOARD_SYS_TIMER_US_HZ/(float)SystemCoreClock)); // /400
+
+    return total_us/1000;
 }
 
 int8_t app_delay_ms(uint32_t delay_ms)
 {
-
+    board_delay_ms(delay_ms);
+    return 0;
 }
 
 /********************** yuv422 packed to planar transform*************************/

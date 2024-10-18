@@ -6,6 +6,10 @@
 #include "app_uart.h"
 
 #if defined(OS_FREERTOS)
+#include "FreeRTOS.h"
+#include "semphr.h"
+//#include "portmacro.h"
+
 SemaphoreHandle_t mutex_uart;
 #endif
 
@@ -103,8 +107,8 @@ int32_t app_uart_open(uint32_t uart_id, uint32_t baudrate)
     ret = dev_uart_comm->uart_control(UART_CMD_SET_WORK_MODE, (void*)0);
     if(ret<0) {dbg_printf(DBG_LESS_INFO, "uart_control(UART_CMD_SET_TRANSFER_MODE, UART_TRANSFER_INT),(%d)\n", ret); return API_ERROR;}
 
-    ret = dev_uart_comm->uart_control(UART_CMD_SET_ERRCB, (void*)(uart_callback_fun_tx));
-    if(ret<0) {dbg_printf(DBG_LESS_INFO, "uart_control(UART_CMD_SET_ERRCB, uart_callback_fun_tx),(%d)\n", ret); return API_ERROR;}
+    ret = dev_uart_comm->uart_control(UART_CMD_SET_ERRCB, (void*)(uart_callback_fun_err));
+    if(ret<0) {dbg_printf(DBG_LESS_INFO, "uart_control(UART_CMD_SET_ERRCB, uart_callback_fun_err),(%d)\n", ret); return API_ERROR;}
     //tx
     ret = dev_uart_comm->uart_control(UART_CMD_SET_TXINT, (void*)(DEV_DISABLED));
     if(ret<0) {dbg_printf(DBG_LESS_INFO, "uart_control(UART_CMD_SET_TXINT, DEV_DISABLED),(%d)\n", ret); return API_ERROR;}

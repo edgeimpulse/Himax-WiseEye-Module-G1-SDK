@@ -6,6 +6,8 @@ LIB_SPI_EEPROM_CSRCDIR	    = $(LIB_SPI_EEPROM_DIR)
 LIB_SPI_EEPROM_CXXSRCSDIR   = $(LIB_SPI_EEPROM_DIR)
 LIB_SPI_EEPROM_INCDIR	    = $(LIB_SPI_EEPROM_DIR)
 
+LIB_SPI_EEPROM_INCDIR += $(LIBRARIES_ROOT)/spi_eeprom/eeprom_param
+
 # find all the source files in the target directories
 LIB_SPI_EEPROM_CSRCS = $(call get_csrcs, $(LIB_SPI_EEPROM_CSRCDIR))
 LIB_SPI_EEPROM_CXXSRCS = $(call get_cxxsrcs, $(LIB_SPI_EEPROM_CXXSRCSDIR))
@@ -22,6 +24,35 @@ LIB_SPI_EEPROM_DEPS = $(call get_deps, $(LIB_SPI_EEPROM_OBJS))
 
 # extra macros to be defined
 LIB_SPI_EEPROM_DEFINES = -DLIB_SPI_EEPROM
+
+LIB_SPI_EEPROM_DEFINES += -DLIB_QSPI_EEPROM
+# OSPI eeprom function doesn't be verified.
+# LIB_SPI_EEPROM_DEFINES += -DLIB_OSPI_EEPROM
+# LIB_SPI_EEPROM_DEFINES += -DLIB_SSPI_EEPROM  
+
+# LIB_SPI_EEPROM_USE_SINGLE_FLASH support y or n
+# This flag is to determine whether to support single or multiple flash instruction tables
+# if this flag is y and FLASH_SEL has multiple flash model, only frist flash model be selected.
+LIB_SPI_EEPROM_USE_SINGLE_FLASH ?= n
+# If FLASH_SEL has multiple flash model.
+# The priority order of the default flash command table: Winbond > MXIC > GIGADEV
+# And then Larger flash capacity is a priority.
+
+# If FLASH_SEL ?= USER_DEFINE
+# default flash command table will be NULL, user need to use hx_lib_spi_eeprom_set_flash_config to set flash command table.
+# The default flash 
+#FLASH_SEL ?= WB_25Q128JW
+FLASH_SEL ?= WB_25Q128JW WB_25Q64JW WB_25Q32JW WB_25Q16JW \
+ 			MX_25U12843 MX_25U6432 MX_25U3232 MX_25U1632 \
+ 			GD_25LQ128 GD_25LQ64 GD_25LQ32 GD_25LQ16
+
+ifeq ($(LIB_SPI_EEPROM_USE_SINGLE_FLASH), y)
+DEV_FLASH = $(word 1, $(strip $(FLASH_SEL)))
+LIB_SPI_EEPROM_DEFINES += $(addprefix -DSPI_EEPROM_USE_, $(addsuffix _INST_, $(DEV_FLASH)))
+else
+LIB_SPI_EEPROM_DEFINES += $(foreach DEV_FLASH, $(FLASH_SEL), $(addprefix -DSPI_EEPROM_USE_, $(addsuffix _INST_, $(DEV_FLASH))))
+endif
+
 
 # genearte library
 ifeq ($(SPIEEPROM_LIB_FORCE_PREBUILT), y)

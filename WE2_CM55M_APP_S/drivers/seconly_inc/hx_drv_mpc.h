@@ -951,5 +951,42 @@ MPC_ERROR_E hx_drv_mpc_get_flash1_cfg(MPC_FLASH1_CFG_T *cfg);
  */
 MPC_ERROR_E hx_drv_mpc_get_flash2_cfg(MPC_FLASH2_CFG_T *cfg);
 #endif//#ifndef BOOT_USED
+
+#ifndef BOOT_USED
+/**
+ * \brief	MPC SRAM0 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_mpc_sram0_irq_handler(void);
+
+/**
+ * \brief	MPC SRAM1 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_mpc_sram1_irq_handler(void);
+
+/**
+ * \brief	MPC SRAM2 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_mpc_sram2_irq_handler(void);
+
+/**
+ * \brief	MPC FLASH1 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_mpc_flash1_irq_handler(void);
+
+/**
+ * \brief	MPC FLASH2 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_mpc_flash2_irq_handler(void);
+#endif
 /** @} */
 #endif /* DRIVERS_INC_HX_DRV_MPC_H_ */

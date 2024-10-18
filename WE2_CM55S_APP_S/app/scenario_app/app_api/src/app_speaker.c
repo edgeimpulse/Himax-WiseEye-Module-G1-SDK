@@ -8,8 +8,6 @@
 #include "app_speaker.h"
 #include "app_api.h"
 
-//#include "dev_i2s.h"
-
 uint32_t g_i2s_tx_addr = 0;
 uint32_t g_i2s_tx_size = 0;
 uint32_t g_frame_size_samples = 0;
@@ -17,13 +15,7 @@ uint8_t g_i2s_tx_busy = 0;
 
 void i2s_tx_callback(uint32_t status)
 {
-	//DEV_I2S_INFO_PTR i2s_info_ptr = (DEV_I2S_INFO_PTR)status;
-	
-	//dbg_printf(DBG_LESS_INFO,"i2s_info_ptr->status = %x \n", i2s_info_ptr->status);
-	//dbg_printf(DBG_LESS_INFO,"i2s_info_ptr->cur_state = %x \n", i2s_info_ptr->cur_state);
-	//dbg_printf(DBG_LESS_INFO,"i2s_info_ptr->err_state = %x \n", i2s_info_ptr->err_state);
-
-	//dbg_printf(DBG_LESS_INFO,"I2S TX CB g_i2s_tx_size: %x \n",g_i2s_tx_size);
+	dbg_printf(DBG_LESS_INFO,"I2S TX CB g_i2s_tx_size: %x \n",g_i2s_tx_size);
     if(g_i2s_tx_size > 0)
     {
         g_i2s_tx_addr = g_i2s_tx_addr + g_frame_size_samples;
@@ -129,7 +121,7 @@ int32_t app_speaker_init()
 		dbg_printf(DBG_LESS_INFO,"[%s() - Line.%d] setRegisters I2C fail (%d)\n", __FUNCTION__, __LINE__, retI2C);
 	}
 
-    board_delay_ms(10);
+	board_delay_ms(10);
 
 	hx_drv_i2cm_write_restart_read(iic_id ,I2S_SLAVE_ADDR ,&regAddr[5] , 1, &rBuffer[0], 1);
 	hx_drv_i2cm_write_restart_read(iic_id ,I2S_SLAVE_ADDR ,&regAddr[6] , 1, &rBuffer[1], 1);

@@ -10,7 +10,7 @@ extern "C" {
 //extern unsigned char gRead_buf[I2CCOMM_MAX_RBUF_SIZE];
 //extern unsigned char gWrite_buf[I2CCOMM_MAX_RBUF_SIZE];
 
-void i2ccomm_cmd_process_sensor_reg_rw(void);
+void i2ccomm_cmd_process_sensor_reg_rw(uint8_t *gRead_buf);
 
 #ifdef __cplusplus
 }

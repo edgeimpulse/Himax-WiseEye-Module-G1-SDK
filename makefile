@@ -1,11 +1,43 @@
-#TOOLCHAIN = arm
+########################
+## Toolchain Settings ##
+########################
+## - arm              ##
+## - gnu              ##
+########################
 TOOLCHAIN = gnu
 
-#############################
-## Toolchain Path Settings ##
-#############################
+###################
+## CPU Setting   ##
+###################
+## - SINGLE_CORE ##
+## - DUAL_CORE   ##
+###################
+CORE_SETTING = SINGLE_CORE
+
+###################################
+## EVK Settings                  ##
+###################################
+## - HX6538_NB_EVB_WLCSP65       ##
+## - HX6538_AIoT_EVB_LQFP128_V10 ##
+## - HX6538_AIoT_EVB_QFN88_V10   ##
+## - HX6538_ISM028_03M           ##
+###################################
+EVK = HX6538_AIoT_EVB_QFN88_V10
+
+################################
+## Application Type
+###################################
+## - sample_code_app             ##
+## - sample_code_prerolling      ##
+## - sample_code_app_dual        ##
+## - app_api_examples            ##
+## - ei_standalone_inferencing   ##
+###################################
+APP_TYPE = ei_standalone_inferencing
+
+# Toolchain Path Settings
 ifeq ($(TOOLCHAIN), gnu)
-GNU_TOOLPATH = "/Applications/ARM/bin"
+GNU_TOOLPATH = "D:/WE2_toolchains/arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi/bin"
 else ifeq ($(TOOLCHAIN), arm)
 ARMLMD_LICENSE_FILE = "C:/Users/$(USERNAME)/AppData/Roaming/arm/ds/licenses"
 ARM_PRODUCT_DEF = "C:/Program Files/Arm/Development Studio 2020.1/sw/mappings/gold.elmap"
@@ -14,9 +46,7 @@ else
 $(error TOOLCHAIN="$(TOOLCHAIN)" is NOT supported!)
 endif
 
-#####################################
-## Source codes and Utilities Path ##
-#####################################
+# Source codes and Utilities Path
 SMALL_CORE_SRC_DIR = WE2_CM55S_APP_S
 BIG_CORE_SRC_DIR = WE2_CM55M_APP_S
 IMAGE_GEN_TOOL_DIR = we2_image_gen_local
@@ -24,14 +54,7 @@ OTA_TOOL_DIR = we2_ota_tool
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 
-##################
-## EVK Settings ##
-##################
-#EVK = HX6538_NB_EVB_WLCSP65
-#EVK = HX6538_AIoT_EVB_LQFP128_V10
-#EVK = HX6538_AIoT_EVB_QFN88_V10
-EVK = HX6538_ISM028_03M
-
+# EVK and package
 ifeq ($(EVK), HX6538_AIoT_EVB_LQFP128_V10)
 	IC_PACKAGE_SEL = LQFP128
 else ifeq ($(EVK), HX6538_AIoT_EVB_QFN88_V10)
@@ -43,14 +66,6 @@ else ifeq ($(EVK), HX6538_NB_EVB_WLCSP65)
 else
 	$(error EVK="$(EVK)" is NOT supported yet!)
 endif
-
-#CORE_SETTING = DUAL_CORE
-CORE_SETTING = SINGLE_CORE
-
-APP_TYPE = ei_standalone_inferencing
-# APP_TYPE = sample_code_app
-# APP_TYPE = sample_code_prerolling
-#APP_TYPE = sample_code_app_freertos
 
 ## Variables for FW
 BUILD_TARGETS = big_core_build
@@ -84,8 +99,17 @@ else
 BUILD_OPT = CORE_SETTING=$(CORE_SETTING) EVK=$(EVK) IC_PACKAGE_SEL=$(IC_PACKAGE_SEL) APP_TYPE=$(APP_TYPE) TOOLCHAIN=$(TOOLCHAIN) ARM_TOOLPATH=$(ARM_TOOLPATH) ARMLMD_LICENSE_FILE=$(ARMLMD_LICENSE_FILE) ARM_PRODUCT_DEF=$(ARM_PRODUCT_DEF)
 endif
 
+ifeq ($(OS),Windows_NT)
 MAKE = make
 MULTI_CORE_OPT = -j4
+COPY = copy
+IMAGE_GEN_TOOL = we2_local_image_gen.exe
+else
+MAKE = make
+MULTI_CORE_OPT = -j4
+COPY = cp
+IMAGE_GEN_TOOL = we2_local_image_gen
+endif
 
 ## Image Gen setting JSON file
 ifeq ($(CORE_SETTING), DUAL_CORE)
@@ -103,29 +127,32 @@ clean: $(CLEAN_TARGETS)
 	@echo clean complete.
 
 small_core_build:
-	$(MAKE) -C $(SMALL_CORE_SRC_DIR) $(BUILD_OPT) $(MULTI_CORE_OPT)
+	$(MAKE) -C $(SMALL_CORE_SRC_DIR) $(BUILD_OPT) APPL=WE2_CM55S BOARD=epii_evb $(MULTI_CORE_OPT)
 
 big_core_build:
-	$(MAKE) -C $(BIG_CORE_SRC_DIR) $(BUILD_OPT) $(MULTI_CORE_OPT)
+	$(MAKE) -C $(BIG_CORE_SRC_DIR) $(BUILD_OPT) APPL=WE2_CM55M BOARD=epii_evb $(MULTI_CORE_OPT)
 
 small_core_clean:
-	$(MAKE) -C $(SMALL_CORE_SRC_DIR) $(BUILD_OPT) clean
+	$(MAKE) -C $(SMALL_CORE_SRC_DIR) $(BUILD_OPT) BOARD=epii_evb clean
 
 big_core_clean:
-	$(MAKE) -C $(BIG_CORE_SRC_DIR) $(BUILD_OPT) clean
+	$(MAKE) -C $(BIG_CORE_SRC_DIR) $(BUILD_OPT) BOARD=epii_evb clean
 
 flash:
 	@echo generate output.img for GNU toolchain...
 	@echo using json setting file = $(IMG_GEN_JSON)
-	cp $(BIG_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).elf
-	cp $(BIG_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).map
+	$(COPY) $(BIG_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).elf
+	$(COPY) $(BIG_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(BIG_CORE_IMG_GEN_INPUT_FILE).map
 ifeq ($(CORE_SETTING), DUAL_CORE)
-	cp $(SMALL_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).elf
-	cp $(SMALL_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).map
+	$(COPY) $(SMALL_CORE_OUTPUT_FILE).elf $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).elf
+	$(COPY) $(SMALL_CORE_OUTPUT_FILE).map $(IMAGE_GEN_INPUT_DIR)/$(SMALL_CORE_IMG_GEN_INPUT_FILE).map
 endif
-	cd $(IMAGE_GEN_TOOL_DIR) && ./we2_local_image_gen $(IMG_GEN_JSON)
-	cp $(IMAGE_GEN_OUTPUT_DIR)/output.img $(OTA_TOOL_DIR)/img
-	cp $(IMAGE_GEN_OUTPUT_DIR)/output.img ./firmware.img
+	cd $(IMAGE_GEN_TOOL_DIR) && ./$(IMAGE_GEN_TOOL) $(IMG_GEN_JSON)
+	$(COPY) $(IMAGE_GEN_OUTPUT_DIR)/output.img $(OTA_TOOL_DIR)/img
+	$(COPY) $(IMAGE_GEN_OUTPUT_DIR)/output.img ./firmware.img
+
+menuconfig:
+	cd $(IMAGE_GEN_TOOL_DIR) && ./menuconfig_mw.bat
 
 info:
 	@echo USERNAME = $(USERNAME)
@@ -139,11 +166,6 @@ info:
 	@echo IMAGE_GEN_TOOL_DIR = $(IMAGE_GEN_TOOL_DIR)
 	@echo OTA_TOOL_DIR = $(OTA_TOOL_DIR)
 	@echo IMG_GEN_JSON = $(IMG_GEN_JSON)
-	@echo CP = $(CP)
-	@echo RM = $(RM)
-	@echo RMD = $(RMD)
-	@echo ECHO = $(ECHO)
-	@echo MKD = $(MKD)
 ifeq ($(TOOLCHAIN), gnu)
 	@echo GNU_TOOLPATH = $(GNU_TOOLPATH)
 else ifeq ($(TOOLCHAIN), arm)
@@ -157,6 +179,7 @@ help:
 	@echo make all MULTI_CORE_OPT=-j4: use 4 CPU cores to compile the sources
 	@echo make clean: clean all the sources
 	@echo make flash: generate the output.img
+	@echo make menuconfig: update loader config setting
 	@echo make small_core_build : compile small core source only
 	@echo make big_core_build : compile big core source only
 	@echo make small_core_clean : clean small core source

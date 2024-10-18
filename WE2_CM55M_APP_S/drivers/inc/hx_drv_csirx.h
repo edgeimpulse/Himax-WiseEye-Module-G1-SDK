@@ -210,4 +210,78 @@ CSIRX_ERROR_E hx_drv_csirx_get_dphyerrirq_state(uint32_t *dphyerrirq);
  * \return  CSIRX_ERROR_E.
  */
 CSIRX_ERROR_E hx_drv_csirx_clr_dphyerrirq_state();
+
+/**
+ * \brief	set DEFALT MIPI TUNCATE CFG
+ *
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_set_default_tuncatecfg();
+
+/**
+ * \brief	enable CSIRX dphy lane ctrl
+ *
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_enable_dphy_ctrl();
+
+/**
+ * \brief	get CSIRX DPHY clock lane stop state
+ *
+ * \return  clock stop state
+ */
+uint32_t hx_drv_csirx_get_clkln_stopstate();
+
+/**
+ * \brief	get CSIRX DPHY lane0 stop state
+ *
+ * \return  lane0 stop state
+ */
+uint32_t hx_drv_csirx_get_ln0_stopstate();
+
+/**
+ * \brief	get CSIRX DPHY lane1 stop state
+ *
+ * \return  lane stop state
+ */
+uint32_t hx_drv_csirx_get_ln1_stopstate();
+
+/**
+ * \brief	Get CSIRX pixel depth
+ *
+ * \param[out]	depth	pixel depth
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_get_pixel_depth(uint8_t *depth);
+
+/**
+ * \brief	set CSIRX pixel depth
+ *
+ * \param[in]	depth	pixel depth
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_set_pixel_depth(uint8_t depth);
+
+/**
+ * \brief	Get CSIRX LANE SWAP enable
+ *
+ * \param[out]	enable	LANE SWAP enable
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_get_lnswap_enable(uint8_t *enable);
+
+/**
+ * \brief	Set CSIRX LANE SWAP enable
+ *
+ * \param[in]	enable	LANE SWAP enable
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_set_lnswap_enable(uint8_t enable);
+
+/**
+ * \brief	Reset MIPI RX DPHY WRAPPER
+ *
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_rst_mipi_dphy_wrapper();
 #endif

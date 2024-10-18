@@ -10,12 +10,10 @@
 #include "BITOPS.h"
 #include "WE2_core.h"
 #include "xprintf.h"
-#ifndef BOOT_USED
 #ifdef NSC
 #include "veneer_clk_ctrl.h"
 #else
 #include "hx_drv_scu.h"
-#endif
 #endif
 
 #define MSCR_CTRL_ENABLE     1
@@ -120,7 +118,7 @@ void EPII_Get_Systemclock(uint32_t *val)
 }
 
 #ifndef BOOT_USED
-#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2)
+#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2) && !defined(RTE_RTOS_FreeRTOS_CORE)
 #define EnablePrivilegedMode() __asm("SVC #0")
 void SVC_Handler_Main_CORE( unsigned int *svc_args )
 {
@@ -196,7 +194,7 @@ extern void EPII_OSPIXIP_MEM_Attribute_S(uint32_t start_addr, uint32_t end_addr,
 	ARM_MPU_SetMemAttr(5UL, MPU_DEVICE_MEMORY_nGnRE);
 	if (mem_att == SPIXIP_MEM_XIP) {
 		MPU->RNR = MPU_OSPI_REGION;
-		MPU->RBAR = ARM_MPU_RBAR(start_addr, 0, 0, 1, 0);
+		MPU->RBAR = ARM_MPU_RBAR(start_addr, 1, 0, 1, 0);
 		MPU->RLAR = ARM_MPU_RLAR(end_addr-1, 4);
 	} else {
 		MPU->RNR = MPU_OSPI_REGION;
@@ -249,7 +247,7 @@ extern void EPII_OSPIXIP_MEM_Attribute_NS(uint32_t start_addr, uint32_t end_addr
 	ARM_MPU_SetMemAttr_NS(5UL, MPU_DEVICE_MEMORY_nGnRE);
 	if (mem_att == SPIXIP_MEM_XIP) {
 		MPU_NS->RNR = MPU_OSPI_REGION;
-		MPU_NS->RBAR = ARM_MPU_RBAR(start_addr, 0, 0, 1, 0);
+		MPU_NS->RBAR = ARM_MPU_RBAR(start_addr, 1, 0, 1, 0);
 		MPU_NS->RLAR = ARM_MPU_RLAR(end_addr-1, 4);
 	} else {
 		MPU_NS->RNR = MPU_OSPI_REGION;
@@ -544,7 +542,7 @@ extern EPII_CORE_RET_E EPII_Set_CPU_Mode(CPU_MODE_E mode)
 			val = val | mode;
 			__set_CONTROL(val);
 		}else{
-#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2)
+#if !defined(ENABLE_OS) && !defined(RTE_CMSIS_RTOS2) && !defined(RTE_RTOS_FreeRTOS_CORE)
 			EnablePrivilegedMode();
 #else
 			return EPII_CORE_RET_FAIL;
@@ -648,7 +646,6 @@ unsigned int hx_get_memory(unsigned int addr) {
 	return val;
 }
 
-#ifndef BOOT_USED
 void EPII_cpu_nop_us(uint32_t period_us)
 {
 	uint32_t freq, delay_nop_cnt;
@@ -673,7 +670,7 @@ void EPII_cpu_nop_us(uint32_t period_us)
 	    __NOP();
 	}
 }
-#endif
+
 
 /**
  \brief  Enable/Disable I Cache

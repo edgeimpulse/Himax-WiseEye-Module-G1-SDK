@@ -31,6 +31,16 @@ typedef enum
     CSITX_NO_ERROR                           = 0,    /**< No ERROR */
     CSITX_ERROR_NOT_INIT                     = -1,    /**< ERROR MSG: not init */
 } CSITX_ERROR_E;
+
+/**
+ * \enum CSITX_DPHYCLKMODE_E
+ * \brief CSITX DPHYCLKMODE Type
+ */
+typedef enum
+{
+	CSITX_DPHYCLOCK_CONT                    = 0,    /**< No ERROR */
+	CSITX_DPHYCLOCK_NON_CONT               	= 1,    /**< ERROR MSG: not init */
+} CSITX_DPHYCLKMODE_E;
 /** @} */
 
 /**
@@ -119,6 +129,22 @@ CSITX_ERROR_E hx_drv_csitx_set_fifo_fill(uint16_t fifo_fill);
 CSITX_ERROR_E hx_drv_csitx_get_fifo_fill(uint16_t *fifo_fill);
 
 /**
+ * \brief   CSITX set CLK MODE
+ *
+ * \param[in]	clkmode		CSITX CLK mode
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_set_dphy_clkmode(CSITX_DPHYCLKMODE_E clkmode);
+
+/**
+ * \brief   CSITX get CLK MODE
+ *
+ * \param[out]	clkmode		CSITX CLK mode
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_get_dphy_clkmode(CSITX_DPHYCLKMODE_E *clkmode);
+
+/**
  * \brief   CSITX CLR IRQ state
  *
  * \return  CSITX_ERROR_E.
@@ -132,5 +158,45 @@ CSITX_ERROR_E hx_drv_csitx_clr_irq_state();
  * \return  CSITX_ERROR_E.
  */
 CSITX_ERROR_E hx_drv_csitx_get_irq_state(uint32_t *irq_state);
+
+/**
+ * \brief   CSITX set DESKEW enable
+ *
+ * \param[in]	enable	DESKEW enable
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_set_deskew(uint8_t enable);
+
+/**
+ * \brief   CSITX get DESKEW enable
+ *
+ * \param[out]	enable	DESKEW enable
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_get_deskew(uint8_t *enable);
+
+/**
+ * \brief   CSITX get DEPTH per pixel
+ *
+ * \param[out]	depth	dpeth per pixel
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_get_pixel_depth(uint8_t *depth);
+
+/**
+ * \brief   CSITX set DEPTH per pixel
+ *
+ * \param[in]	depth	depth per pixel
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_set_pixel_depth(uint8_t depth);
+
+/**
+ * \brief   CSITX set Continuous CLK out
+ *
+ * \param[in]	lane_nb	lane number
+ * \return  CSITX_ERROR_E.
+ */
+CSITX_ERROR_E hx_drv_csitx_set_continuous_clk(uint8_t lane_nb);
 
 #endif

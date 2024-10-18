@@ -261,4 +261,27 @@ CSIRX_ERROR_E hx_drv_csirx_get_pixel_depth(uint8_t *depth);
  * \return  CSIRX_ERROR_E.
  */
 CSIRX_ERROR_E hx_drv_csirx_set_pixel_depth(uint8_t depth);
+
+/**
+ * \brief	Get CSIRX LANE SWAP enable
+ *
+ * \param[out]	enable	LANE SWAP enable
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_get_lnswap_enable(uint8_t *enable);
+
+/**
+ * \brief	Set CSIRX LANE SWAP enable
+ *
+ * \param[in]	enable	LANE SWAP enable
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_set_lnswap_enable(uint8_t enable);
+
+/**
+ * \brief	Reset MIPI RX DPHY WRAPPER
+ *
+ * \return  CSIRX_ERROR_E.
+ */
+CSIRX_ERROR_E hx_drv_csirx_rst_mipi_dphy_wrapper();
 #endif

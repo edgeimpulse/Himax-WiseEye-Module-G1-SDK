@@ -531,6 +531,16 @@ typedef enum PMU_LSC_IORET_MODE_S
 }PMU_LSC_IORET_MODE_E;
 
 /**
+ * \enum PMU_DPD_PA01_GPIO_POL_WAKEUP_E
+ * \brief PMU DPD PA01 GPIO POLARITY for WAKEUP
+ */
+typedef enum PMU_DPD_PA01_GPIO_POL_WAKEUP_S
+{
+	PMU_DPD_PA01_GPIO_POL_WAKEUP_HIGH = 0x00,
+	PMU_DPD_PA01_GPIO_POL_WAKEUP_LOW = 0x01,
+}PMU_DPD_PA01_GPIO_POL_WAKEUP_E;
+
+/**
  * \brief	Power Managements interrupt callback function
  *
  * \param[in]	param	 Power Management interrupt callback event

@@ -28,6 +28,6 @@
 #include "WE2_core.h"
 #include "WE2_device_addr.h"
 #include "WE2_debug.h"
-
+#include "hx_drv_swreg_aon_export.h"
 
 #endif

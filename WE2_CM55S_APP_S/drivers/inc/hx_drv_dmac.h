@@ -572,6 +572,8 @@ typedef struct DMAC_TRANSFER_CONFIG_S
     uint32_t protect;               /**< protection and access configuration type */
 } DMAC_TRANSFER_CONFIG_T;
 
+typedef void* DMAC_CTRL_PARAM;
+
 /**
  * enable/disable DMA
  * \param type : uint32_t
@@ -800,7 +802,11 @@ typedef struct dev_dmac
      * open DMA device 
      */
     DMAC_ERROR_E (*dmac_open)(void); 
-
+    
+    /**
+     * close DMA device
+     */
+    DMAC_ERROR_E (*dmac_close)(void);
     /**
      * control DMA device
      * 
@@ -880,6 +886,13 @@ typedef struct dev_dmac
  */
 int hx_drv_dmac_init(USE_HX_DMAC_E dmac_id, uint32_t base_addr);
 
+/**
+ * \brief This function deinitializes a specified DMAC interface.
+ * 
+ * \param dmac_id specified DMAC ID. using USE_HX_DMAC_ALL to deinit all DMAC interface at same time. 
+ * \return int an error code of type \ref DMAC_ERROR_E 
+ */
+int hx_drv_dmac_deinit(USE_HX_DMAC_E dmac_id);
 /**
  * @brief get an \ref DEV_DMAC "dma controller" by dma controller id.
  * 

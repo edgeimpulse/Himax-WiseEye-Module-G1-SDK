@@ -1,11 +1,13 @@
 #include "i2c_comm.h"
 #include "WE2_debug.h"
 #include "app_i2c_cmd_def.h"
-#include "app_i2c_cmd.h"
+//#include "app_i2c_cmd.h"
 #include "ota_update.h"
 
 #include "hx_drv_swreg_aon_export.h"
 #include "hx_drv_swreg_aon.h"
+
+typedef void (*funcptr_void)(void);
 
 I2CCOMM_ERROR_E i2ccomm_cmd_process_ota_flow(uint8_t *read_buf)
 {
@@ -31,9 +33,7 @@ I2CCOMM_ERROR_E i2ccomm_cmd_process_ota_flow(uint8_t *read_buf)
                 /* jump to 2ndloader */
                 
                 hx_drv_swreg_aon_set_ota_flag(SWREG_AON_OTA_YES_FLAG);
-                
-    	        ResetHandler = (funcptr_void)(*((uint32_t *)((BOOTLOADER_BASE) + 4U)));
-    	        ResetHandler();
+                setPS_PDNoVid();
             }
             break;
         default:

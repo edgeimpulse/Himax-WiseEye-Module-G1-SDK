@@ -38,7 +38,7 @@
  *  | red plane |
  *  --------------
 */
-#define IMG_RGB_ORDER_FORWARD
+// #define IMG_RGB_ORDER_FORWARD
 
 #include "hx_drv_jpeg.h"
 #ifdef __cplusplus

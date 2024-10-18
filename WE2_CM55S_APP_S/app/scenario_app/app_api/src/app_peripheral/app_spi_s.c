@@ -1,20 +1,17 @@
 #include "hx_drv_spi.h"
+#include "hx_drv_timer.h"
+#include "hx_drv_scu_export.h"
 
 #include "WE2_debug.h"
 
 #include "app_api.h"
 #include "app_spi_s.h"
 
-#if 0 //def __Xdmac
-#include "arc_udma.h"
-#endif
-
 typedef struct {
     uint8_t pin_num;
     HXGPIO_VALUE pin_actv_lvl;
 }spi_s_handshake;
 
-//static dma_channel_t dma_chn_spi_s_tx, dma_chn_spi_s_rx;
 static bool app_spi_s_rx_busy_status = false;
 static bool app_spi_s_tx_busy_status = false;
 static spi_s_handshake app_tx_handshake = {HX_GPIO_INVAL, HX_GPIO_LOW};
@@ -42,6 +39,12 @@ static void app_spi_s_callback_fun_err(void *status)
     return;
 }
 
+static void app_spi_s_callback_fun_xfer(void *status)
+{
+    dbg_printf(DBG_MORE_INFO, "SPI Slave XFER CB_FUN\n");
+    return;
+}
+
 static void app_spi_s_cb_fun_tx(void)
 {
     dbg_printf(DBG_LESS_INFO, "app_spi_s_cb_fun_tx\n");
@@ -52,36 +55,38 @@ static void app_spi_s_cb_fun_tx(void)
     return;
 }
 
+static void app_spi_s_cb_fun_rx(void)
+{
+    dbg_printf(DBG_LESS_INFO, "app_spi_s_cb_fun_rx\n");
+    app_spi_s_rx_busy_status = false;
+    return;
+}
+
 int8_t app_spi_s_open()
 {
-
     DEV_SPI_INFO_PTR info; 
     DEV_SPI_PTR dev_spi_s;
+	uint32_t freq;
 
+	hx_drv_scu_set_pdlsc_sspisclk_cfg(SCU_LSCSSPISSRC_PLL, SCU_LSCCLKDIV_1);//chengshin's mail?
+
+	if(0 == drv_interface_get_freq(SCU_CLK_FREQ_TYPE_LSC_SSPIS, &freq))
+		dbg_printf(DBG_LESS_INFO, "SCU_CLK_FREQ_TYPE_LSC_SSPIS freq=%u\n", freq);
+    
+	hx_drv_spi_slv_init(USE_DW_SPI_SLV_0, DW_SSPI_S_RELBASE);
     dev_spi_s = hx_drv_spi_slv_get_dev(USE_DW_SPI_SLV_0);
-
+    
     info = &(dev_spi_s->spi_info);
 
     info->spi_cbs.tx_cb = app_spi_s_callback_fun_tx;
     info->spi_cbs.rx_cb = app_spi_s_callback_fun_rx;
     info->spi_cbs.err_cb = app_spi_s_callback_fun_err;
-
+	info->spi_cbs.xfer_cb = app_spi_s_callback_fun_xfer;
+    
     dev_spi_s->spi_open(DEV_SLAVE_MODE, SPI_CPOL_0_CPHA_0);
     
-    //dev_spi_s->spi_control(SPI_CMD_SET_DMA_TXCB, (void *)app_spi_s_callback_fun_tx);
-    //dev_spi_s->spi_control(SPI_CMD_SET_DMA_RXCB, (void *)app_spi_s_callback_fun_rx);
-    
-
-#if 0//def __Xdmac
-    /** Must init uDMA before use it */
-    //dmac_init(&udma);
-
-    dmac_init_channel(&dma_chn_spi_s_tx);
-    dmac_init_channel(&dma_chn_spi_s_rx);
-
-    dmac_reserve_channel(IO_SPI_SLV0_DMA_TX, &dma_chn_spi_s_tx, DMA_REQ_SOFT);
-    dmac_reserve_channel(IO_SPI_SLV0_DMA_RX, &dma_chn_spi_s_rx, DMA_REQ_PERIPHERAL);
-#endif
+    dev_spi_s->spi_control(SPI_CMD_SET_DMA_TXCB, (void *)app_spi_s_callback_fun_tx);
+    dev_spi_s->spi_control(SPI_CMD_SET_DMA_RXCB, (void *)app_spi_s_callback_fun_rx);
 
     app_spi_s_rx_busy_status = false;
     app_spi_s_tx_busy_status = false;
@@ -92,15 +97,6 @@ int8_t app_spi_s_open()
 int8_t app_spi_s_close()
 {
     hx_drv_spi_slv_deinit(USE_DW_SPI_SLV_0);
-
-#if 0//def __Xdmac
-    /* Release channel resource */
-    dmac_release_channel(&dma_chn_spi_s_tx);
-    dmac_release_channel(&dma_chn_spi_s_rx);
-
-    //dmac_close();
-#endif
-
     return API_SUCC;
 }
 
@@ -134,7 +130,7 @@ int8_t app_spi_s_write(uint8_t *tx_data, uint32_t tx_len, SPI_CMD_DATA_TYPE data
     
     if(data_type == 0x00)
     {
-        ret = dev_spi_s->spi_write(tx_data, tx_len);
+        ret = dev_spi_s->spi_write_dma(tx_data, tx_len, (void *)app_spi_s_cb_fun_tx);
     }
     else
     {
@@ -159,13 +155,14 @@ int8_t app_spi_s_write(uint8_t *tx_data, uint32_t tx_len, SPI_CMD_DATA_TYPE data
             hx_drv_gpio_set_out_value((GPIO_INDEX_E)app_tx_handshake.pin_num, (app_tx_handshake.pin_actv_lvl == HX_GPIO_LOW)?GPIO_OUT_HIGH:GPIO_OUT_LOW); /*fail, restore to default level*/
         }
         app_spi_s_tx_busy_status = false;
+        dbg_printf(DBG_LESS_INFO, "spi_write_ptl FAILED.\n");
         return API_ERROR;
     }
     
     wait_count = 0;
     while(app_spi_s_tx_busy_status == true)
     {
-        board_delay_ms(10);
+    	hx_drv_timer_cm55x_delay_ms(10, TIMER_STATE_DC);
         
         if(wait_count++ > 300)
         {
@@ -176,6 +173,7 @@ int8_t app_spi_s_write(uint8_t *tx_data, uint32_t tx_len, SPI_CMD_DATA_TYPE data
                 hx_drv_gpio_set_out_value((GPIO_INDEX_E)app_tx_handshake.pin_num, (app_tx_handshake.pin_actv_lvl == HX_GPIO_LOW)?GPIO_OUT_HIGH:GPIO_OUT_LOW); /*timeout, restore to default level*/
             }
             app_spi_s_tx_busy_status = false;
+            dbg_printf(DBG_LESS_INFO, "SPI WRITE TIMEOUT(3000).\n");
             return API_ERROR;
         }
     }
@@ -212,33 +210,39 @@ int8_t app_spi_s_read(uint8_t *rx_data, uint32_t rx_len)
 		return API_INVALID_SIZE;
 
     if(app_spi_s_rx_busy_status == true)
+    {
+    	dbg_printf(DBG_LESS_INFO, "%s %u\n", __FUNCTION__, __LINE__);
         return API_ERROR;
-    
+    }
     app_spi_s_rx_busy_status = true;
     
     dev_spi_s = hx_drv_spi_slv_get_dev(USE_DW_SPI_SLV_0);
-    ret = dev_spi_s->spi_read(rx_data, rx_len);
-    
+	
+    ret = dev_spi_s->spi_read_dma(rx_data, rx_len, app_spi_s_cb_fun_rx);
+	hx_InvalidateDCache_by_Addr((volatile void *)rx_data, sizeof(uint8_t) * rx_len);
+	
     if(ret < 0)
     {
         app_spi_s_rx_busy_status = false;
+		dbg_printf(DBG_LESS_INFO, "%s %u\n", __FUNCTION__, __LINE__);
         return API_ERROR;
     }
 
     wait_count = 0;
     while(app_spi_s_rx_busy_status == true)
     {
-        board_delay_ms(10);
+    	hx_drv_timer_cm55x_delay_ms(10, TIMER_STATE_DC);
 
         if(wait_count++ > 100)
         {
             app_spi_s_rx_busy_status = false;
+			dbg_printf(DBG_LESS_INFO, "%s %u\n", __FUNCTION__, __LINE__);
             return API_ERROR;
         }
     }
     
     /*
-    for(int i = 0; i < rx_len; i++)
+	for(uint32_t i = 0; i < rx_len; i++)
 	{
 		dbg_printf(DBG_LESS_INFO, "%02x ", rx_data[i]);
         if((i%16)==15)
@@ -249,4 +253,3 @@ int8_t app_spi_s_read(uint8_t *rx_data, uint32_t rx_len)
 
     return API_SUCC;
 }
-

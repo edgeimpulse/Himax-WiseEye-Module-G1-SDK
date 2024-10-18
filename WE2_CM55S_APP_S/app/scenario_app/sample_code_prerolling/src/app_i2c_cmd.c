@@ -5,12 +5,22 @@
 #include "app_i2c_cmd_def.h"
 #include "app_i2c_cmd.h"
 
+#ifdef OS_FREERTOS
+#include "FreeRTOS.h"
+#include "task.h"
+#include "portmacro.h"
+#endif
+
 static uint8_t gWrite_buf[DW_IIC_S_NUM][I2CCOMM_MAX_WBUF_SIZE] __ALIGNED(__SCB_DCACHE_LINE_SIZE);
 static uint8_t gRead_buf[DW_IIC_S_NUM][I2CCOMM_MAX_RBUF_SIZE] __ALIGNED(__SCB_DCACHE_LINE_SIZE);
 
 static uint8_t i2c_rx_ready[DW_IIC_S_NUM] = {false, false};
 static uint8_t g_i2cs_en_write[DW_IIC_S_NUM] = {false, false};
 static I2C_CMD_CSTM_CB cstm_feature_cb[4] = {0};
+
+#ifdef OS_FREERTOS
+TaskHandle_t i2ccomm_task_handle = NULL;
+#endif
 
 void set_i2cs_enable_write(USE_DW_IIC_SLV_E iic_id, bool status)
 {
@@ -51,7 +61,7 @@ static void i2ccomm_0_callback_fun_rx(void *param)
 
     if( xYieldRequired == pdTRUE )
     {
-        portYIELD_FROM_ISR();
+        portYIELD_FROM_ISR(pdTRUE);
     }
     #else
     i2c_rx_ready[USE_DW_IIC_SLV_0] = true;
@@ -93,7 +103,7 @@ static void i2ccomm_1_callback_fun_rx(void *param)
 
     if( xYieldRequired == pdTRUE )
     {
-        portYIELD_FROM_ISR();
+        portYIELD_FROM_ISR(pdTRUE);
     }
     #else
     i2c_rx_ready[USE_DW_IIC_SLV_1] = true;
@@ -126,12 +136,6 @@ I2CCOMM_CFG_T gI2CCOMM_cfg[DW_IIC_S_NUM] = {
 };
 
 #ifdef OS_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "portmacro.h"
-
-TaskHandle_t i2ccomm_task_handle = NULL;
-
 static void i2ccomm_task(void *par)
 {
     unsigned char feature_type = I2CCOMM_FEATURE_MAX;
@@ -182,7 +186,7 @@ static void i2ccomm_task(void *par)
                 }
                 break;
             case I2CCOMM_FEATURE_SYS:
-                app_sys_info_cmd_handler((unsigned char *)&gRead_buf[device_id], (unsigned char *)&gWrite_buf[device_id]);
+                //app_sys_info_cmd_handler((unsigned char *)&gRead_buf[device_id], (unsigned char *)&gWrite_buf[device_id]);
                 break;
             case I2CCOMM_FEATURE_SENSOR_REG_ACCESS:
                 //board_delay_ms(200);//delay some times for sensor to get/set the register.

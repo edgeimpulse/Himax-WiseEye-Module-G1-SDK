@@ -4,15 +4,18 @@
 #include "app_datapath.h"
 #include "app_board.h"
 #include "app_xdma_cfg.h"
+#if defined(WE2_SINGLE_CORE)
 #include "app_i2c_cmd.h"
+#endif
 #if defined(UART_PROTOCOL) && defined(WE2_SINGLE_CORE)
 #include "app_uart_cmd.h"
 #endif
-
+#include "app_pmu.h"
 #ifdef TFLITE_ALGO_ENABLED
 #include "app_algo.h"
 #endif
 #ifdef FLASH_AS_SRAM
+#include "app_flash.h"
 #include "spi_eeprom_comm.h"
 #endif
 
@@ -33,33 +36,9 @@ static volatile uint8_t g_jpeg_autofill_data[JPEG_AUTOFILL_SIZE] = {};
 #ifdef TFLITE_ALGO_ENABLED
 static ALGO_RESULT algo_result;
 #endif
-
+#if defined(WE2_SINGLE_CORE)
 static void priv_i2c_cstm_cmd_handler(uint8_t cmd_id, uint8_t *cmd_payload, uint16_t cmd_payload_len);
-
-#ifdef FLASH_AS_SRAM
-static void priv_init_xip()
-{
-    uint8_t flash_info[3] = {0};
-    int32_t ret = 0;
-
-    dbg_printf(DBG_LESS_INFO, "priv_init_xip...\n");
-    ret = hx_lib_spi_eeprom_open(USE_DW_SPI_MST_Q);
-    if (ret != 0) {
-        dbg_printf(DBG_LESS_INFO, "hx_lib_spi_eeprom_open failed!\n");
-    } else {
-        dbg_printf(DBG_LESS_INFO, "hx_lib_spi_eeprom_open OK.\n");
-    }
-    hx_lib_spi_eeprom_read_ID(USE_DW_SPI_MST_Q, flash_info);
-    ret = hx_lib_spi_eeprom_enable_XIP(USE_DW_SPI_MST_Q, true, FLASH_DUAL, true);
-    if (ret != 0) {
-       dbg_printf(DBG_LESS_INFO, "hx_lib_spi_eeprom_enable_XIP failed!\n");
-    } else {
-        dbg_printf(DBG_LESS_INFO, "hx_lib_spi_eeprom_enable_XIP OK.\n");
-    }
-    dbg_printf(DBG_LESS_INFO, "priv_init_xip done.\n");
-}
 #endif
-
 void app_init()
 {
     app_dp_cfg_t app_dp_init_cfg;
@@ -67,7 +46,7 @@ void app_init()
 
 #ifdef TFLITE_ALGO_ENABLED
 #ifdef FLASH_AS_SRAM
-    priv_init_xip();
+    flash_init();
 #endif
     dbg_printf(DBG_LESS_INFO, "app_algo_init...\n");
     app_algo_init();
@@ -79,7 +58,7 @@ void app_init()
     /* SPI. */
     #ifdef SPI_MASTER_SEND /*master*/
     spi_cfg.mst_id = SPI_MST_1; /**< id*/
-    spi_cfg.mst_freq = 5000000;  /**< frequency*/
+    spi_cfg.mst_freq = 25000000;  /**< frequency*/
     #endif
 
     #ifdef SPI_SLAVE_SEND /*slave*/
@@ -106,11 +85,18 @@ void app_init()
     #endif
 
     /* I2C Slave. */
+	#if defined(WE2_SINGLE_CORE)
     app_i2c_cmd_init(USE_DW_IIC_SLV_0);
     app_i2c_cmd_reg_cstm_feature(I2C_CMD_CSTM_FEATURE_1, (I2C_CMD_CSTM_CB)priv_i2c_cstm_cmd_handler);
+	#endif
+	
+    //
+    app_dp_get_def_init_cfg(&app_dp_init_cfg);
+
+    /* Sensor */
+    app_sensor_init(&app_dp_init_cfg);
 
     /* Datapath. */
-    app_dp_get_def_init_cfg(&app_dp_init_cfg);
     app_dp_init_cfg.wdma1 = (uint32_t)g_wdma1_data;
     app_dp_init_cfg.wdma2 = (uint32_t)g_wdma2_data;
     app_dp_init_cfg.wdma3 = (uint32_t)g_wdma3_data;
@@ -149,8 +135,9 @@ void app_main()
     {
         uint32_t raw_img_addr = 0, img_width = 0, img_heigh = 0;
         uint32_t jpg_addr = 0, jpg_size = 0;
-
+#if defined(WE2_SINGLE_CORE)
         app_i2c_cmd_polling(USE_DW_IIC_SLV_0);
+#endif
 #if defined(UART_PROTOCOL) && defined(WE2_SINGLE_CORE)
         app_uart_cmd_polling(uart_id);
 #endif
@@ -168,7 +155,6 @@ void app_main()
         memset(&algo_result, 0, sizeof(algo_result));
         app_algo_run(raw_img_addr, img_width, img_heigh, &algo_result);
 #endif
-
 
         /* Send out JPG */
         if (TX_DATA_JPEG == (data_types & TX_DATA_JPEG)) {
@@ -191,7 +177,8 @@ void app_main()
                 app_uart_tx(raw_img_addr, img_width*img_heigh, DATA_TYPE_RAW_IMG);
             #endif
         }
-
+		
+#ifdef TFLITE_ALGO_ENABLED
         /* Send out Metadata */
         if (TX_DATA_META == (data_types & TX_DATA_META)) {
             #if defined(SPI_MASTER_SEND) || defined(SPI_SLAVE_SEND)
@@ -200,34 +187,11 @@ void app_main()
             app_uart_tx((uint32_t)&algo_result, sizeof(algo_result), DATA_TYPE_META_DATA);
             #endif
         }
-
+#endif
     }
 }
 
-int8_t app_sys_info_get_formal_version(INFO_FORMAL_VERSION *formal_version)
-{
-    formal_version->svn_version = 123456;
-    strncpy((char *)formal_version->customer_name, "HMX", 5);
-    formal_version->customer_version = 1;
-    return 0;
-}
-
-int8_t app_sys_info_get_tx_protocol(INFO_TX_PROTOCOL *tx_protocol)
-{
-    tx_protocol->intf_type = TX_IF_SPI_M;
-    tx_protocol->speed = 5000000;
-    tx_protocol->data_types = data_types;
-    return 0;
-}
-
-int8_t app_sys_info_get_raw_setting(INFO_RAW_SETTING *raw_setting)
-{
-    raw_setting->format = RAW_YUV400;
-    raw_setting->width = DP_JPEG_ENC_WIDTH;
-    raw_setting->height = DP_JPEG_ENC_HEIGHT;
-    return 0;
-}
-
+#if defined(WE2_SINGLE_CORE)
 typedef enum
 {
     CSTM_CMD_1 = 0x00,
@@ -241,7 +205,6 @@ typedef enum
 * i2c data[2] = length of command payload (LSB)
 * i2c data[3] = length of command payload (MSB)
 * i2c data[4 ~ n] = payload (only present when payload length > 0)
-* e.g. IR Cut enable = [0x81, 0x00, 0x01, 0x00, 0x01]
 */
 static void priv_i2c_cstm_cmd_handler(uint8_t cmd_id, uint8_t *cmd_payload, uint16_t cmd_payload_len)
 {
@@ -264,4 +227,5 @@ static void priv_i2c_cstm_cmd_handler(uint8_t cmd_id, uint8_t *cmd_payload, uint
         break;
     }
 }
+#endif
 

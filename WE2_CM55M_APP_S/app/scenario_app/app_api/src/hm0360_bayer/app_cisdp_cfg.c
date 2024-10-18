@@ -11,8 +11,11 @@
 
 #include "WE2_debug.h"
 
-#ifdef CIS_AOS_MODE
 static HX_CIS_SensorSetting_t HM0360_init_setting[] = {
+#if (CIS_ENABLE_XSLEEP_TRIG_FRM == 0x01)
+#include "HM0360BAYER_mipi_dvi_640x480_8bitio.i" //precap
+#else
+#ifdef CIS_AOS_MODE
 #if defined(CIS_IO_8BIT_LSB)
 #include "HM0360_Bayer_640x480_setA_VGA_setB_QVGA_8b_Parallel_case2_HWcstream_R2.i"
 #elif defined(CIS_IO_4BIT_LSB)
@@ -20,12 +23,11 @@ static HX_CIS_SensorSetting_t HM0360_init_setting[] = {
 #else
 #error "not define CIS IO BIT"
 #endif
-};
-#else /*NON AOS*/
-static HX_CIS_SensorSetting_t HM0360_init_setting[] = {
-#include "HM0360_24MHz_Bayer_640x480_setA_VGA_setB_QVGA_MIPI_4b_ParallelOutput_R2.i"
-};
+#else
+#include "WEIFmt_HM0360_24MHz_MONO_640x480_setA_VGA_setB_QVGA_MIPI_R1.i"
 #endif
+#endif
+};
 
 #ifdef CIS_AOS_MODE
 static HX_CIS_SensorSetting_t  HM0360_stream_on[] = {
@@ -120,22 +122,8 @@ void app_cisdp_set_hxautoi2c(APP_INIT_TYPE_E type)
 
 int app_cisdp_datapath_init(const app_dp_cfg_t* dp_init_cfg)
 {
-    #if (CIS_ENABLE_MIPI_INF != 0x00)
-    //setup MIPI RX
-	app_set_mipi_csirx_enable();
-    #endif
-    
-    #if ((CIS_ENABLE_MIPI_INF != 0x00) && (IC_VERSION >= 30))
-    {
-	    sensordplib_set_sensorctrl_inp_wi_crop_bin(dp_init_cfg->sensor_type, dp_init_cfg->stream_type,
-			dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type, dp_init_cfg->crop, dp_init_cfg->inp_bin);
-    }
-    #else
-    {
-    	sensordplib_set_sensorctrl_inp(dp_init_cfg->sensor_type, dp_init_cfg->stream_type, 
-            dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type);
-    }
-    #endif
+	sensordplib_set_sensorctrl_inp(dp_init_cfg->sensor_type, dp_init_cfg->stream_type, 
+        dp_init_cfg->sensor_width, dp_init_cfg->sensor_height, dp_init_cfg->inp_subsample_type);
 
     return 0;
 }
@@ -288,10 +276,6 @@ void app_cisdp_sensor_stop()
     //disable hxauotoi2c
     sensordplib_autoi2c_disable();
     dbg_printf(DBG_LESS_INFO, "hxauto i2c disable \n");
-    #endif
-
-    #if (CIS_ENABLE_MIPI_INF != 0x00)
-	app_set_mipi_csirx_disable();
     #endif
 }
 #endif //HM0360_BAYER

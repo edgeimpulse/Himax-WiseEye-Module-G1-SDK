@@ -1,0 +1,1 @@
+/app/we2_image_gen_local/common/cfg/Loader_config.bin 0x34000800 0x3a0784ac 0x0010000 0

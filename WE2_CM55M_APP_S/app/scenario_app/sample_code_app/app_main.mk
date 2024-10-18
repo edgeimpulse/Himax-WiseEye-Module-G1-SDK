@@ -1,11 +1,33 @@
 override SCENARIO_APP_SUPPORT_LIST := $(APP_TYPE)
 
-######################
-## Algorithm Config ##
-######################
-TFLITE_ALGO = YOLO_FASTEST
-#TFLITE_ALGO = TFLITE_MICRO_GOOGLE_PERSON
-FLASH_AS_SRAM_ENABLE = 1
+####################
+## Sensor Option  ##
+## - HM01B0_MONO  ##
+## - HM11B1_MONO  ##
+## - HM0360_BAYER ##
+## - HM0360_MONO  ##
+## - HM0360_MIPI  ##
+## - HM2170_BAYER ##
+## - HM2170_MIPI  ##
+####################
+CIS ?= HM0360_MONO
+
+##############################
+## Transmit Protocol Option ##
+## - UART					##
+## - SPI_MASTER				##
+## - SPI_SLAVE				##
+##############################
+TRANSMIT_PROTOCOL ?= SPI_MASTER
+
+##################################
+## Algorithm Config Option      ##
+## - YOLO_FASTEST               ##
+## - TFLITE_MICRO_GOOGLE_PERSON ##
+## - HMX_ALGO                   ##
+##################################
+TFLITE_ALGO ?= YOLO_FASTEST
+FLASH_AS_SRAM_ENABLE ?= 1
 
 ifneq ("$(TFLITE_ALGO)","")
     APPL_DEFINES += -DTFLITE_ALGO_ENABLED
@@ -15,42 +37,10 @@ ifeq ($(FLASH_AS_SRAM_ENABLE), 1)
     APPL_DEFINES += -DFLASH_AS_SRAM
 endif
 
-###################
-## Sensor Option ##
-###################
-#CIS = HM11B1_MONO
-#CIS = HM0360_BAYER
-CIS = HM0360_MONO
-#CIS = HM2170_BAYER
-
-#APPL_DEFINES += -DAIOT_NB_EXAMPLE_TZ_S_ONLY
-#APPL_DEFINES += -DEVT_CM55MMB_NBAPP
-#APPL_DEFINES += -DEVT_DATAPATH
-#APPL_DEFINES += -DEVT_CM55MTIMER
-APPL_DEFINES += -DDBG_MORE
-#APPL_DEFINES += -DCM55M_ENABLE_CM55S
-#APPL_DEFINES += -DENABLE_EVENT_IDLE_WFI
-#APPL_DEFINES += -DTF_LITE_STATIC_MEMORY
-
-#For PMU dump register
-#APPL_DEFINES += -DLIBPWRMGMT_PMUDUMP
-#APPL_DEFINES += -DAPP_PMU_REG_EXP
-
-#EVENTHANDLER_SUPPORT = event_handler
-#EVENTHANDLER_SUPPORT_LIST += evt_datapath
-#EVENTHANDLER_SUPPORT_LIST += evt_cm55mmb_nbapp
-#EVENTHANDLER_SUPPORT_LIST += evt_cm55mtimer
-#EVENTHANDLER_SUPPORT_LIST += evt_i2ccomm
-
-##############################
-## Transmit Protocol Option ##
-## - UART					##
-## - SPI_MASTER				##
-## - SPI_SLAVE				##
-##############################
-TRANSMIT_PROTOCOL = SPI_MASTER
-#TRANSMIT_PROTOCOL = SPI_SLAVE
-#TRANSMIT_PROTOCOL = UART
+##############
+## FreeRTOS ##
+##############
+FREERTOS_SUPPORT ?= 0
 
 ################
 ## Config APP ##
@@ -61,8 +51,14 @@ APPL_APP_ROOT = $(SCENARIO_APP_ROOT)/$(APP_TYPE)
 ####################
 ## C source files ##
 ####################
-APPL_APP_CSRC_LIST = src/app_main.c \
-                     src/app_i2c_cmd.c
+ifeq ($(FREERTOS_SUPPORT), 0)
+APPL_APP_CSRC_LIST = src/app_main.c
+else ifeq ($(FREERTOS_SUPPORT), 1)
+APPL_APP_CSRC_LIST = src/app_main_freertos.c
+endif
+                     
+APPL_APP_CSRC_LIST += src/app_i2c_cmd.c
+                     
 ifeq ($(TRANSMIT_PROTOCOL), UART)
 APPL_APP_CSRC_LIST += src/app_uart_cmd.c
 endif
@@ -76,12 +72,17 @@ APPL_APP_CCSRC_LIST = src/google_person/app_algo.cc \
 else ifeq ($(TFLITE_ALGO), YOLO_FASTEST)
 APPL_APP_CCSRC_LIST = src/yolo_fastest/app_algo.cc \
 					  src/yolo_fastest/yolo_coco_vela.cc
+else ifeq ($(TFLITE_ALGO), HMX_ALGO)
+include $(APPL_APP_ROOT)/hmx_algo.inc
 endif
 
 ##################
 ## Header files ##
 ##################
 APPL_APP_INCDIR_LIST = include
+ifeq ($(TFLITE_ALGO), HMX_ALGO)
+APPL_APP_INCDIR_LIST += include/hmx_algo
+endif
 
 ## append file path
 APPL_APP_CSRCS = $(addprefix $(APPL_APP_ROOT)/, $(APPL_APP_CSRC_LIST))
@@ -94,32 +95,29 @@ APPL_APP_INCDIRS = $(addprefix $(APPL_APP_ROOT)/, $(APPL_APP_INCDIR_LIST))
 # Add new library here
 # The source code should be loacted in ~\library\{lib_name}\
 ##
-#LIB_SEL = hxevent
-LIB_SEL = pwrmgmt
-LIB_SEL += sensordp
-LIB_SEL += spi_ptl
-#LIB_SEL += tflm 
+LIB_SEL = sensordp pwrmgmt spi_ptl i2c_comm
 #LIB_SEL += img_proc 
-LIB_SEL += i2c_comm
-LIB_SEL += audio
+#LIB_SEL += audio
+LIB_SEL += spi_psram
 
 ifneq ("$(TFLITE_ALGO)","")
 LIB_SEL += img_proc 
 LIB_SEL += tflmtag2209_u55tag2205
+ifeq ($(TFLITE_ALGO), HMX_ALGO)
+LIB_SEL += hx_vip_algo
+endif
 endif
 
-ifeq ($(FLASH_AS_SRAM_ENABLE), 1)
 LIB_SEL += spi_eeprom
-endif
 
-##
-# middleware support feature
-# Add new middleware here
-# The source code should be loacted in ~\middleware\{mid_name}\
-##
-MID_SEL =
-
+ifeq ($(FREERTOS_SUPPORT), 1)
+override OS_SEL := freertos_10_5_1
+override OS_HAL := n
+override MPU := n
+APPL_DEFINES += -DOS_FREERTOS
+else
 override undefine OS_SEL
+endif
 override TRUSTZONE := y
 override TRUSTZONE_TYPE := security
 override TRUSTZONE_FW_TYPE := 1
@@ -134,26 +132,11 @@ endif
 
 override CIS_SEL := HM_COMMON
 
-#CIS_SUPPORT_INAPP = cis_sensor
-#CIS_SUPPORT_INAPP_MODEL = cis_hm11b1
-
 ifeq ($(strip $(TOOLCHAIN)), arm)
 override LINKER_SCRIPT_FILE := $(SCENARIO_APP_ROOT)/$(APP_TYPE)/TrustZone_S_ONLY.sct
 else#TOOLChain
 override LINKER_SCRIPT_FILE := $(SCENARIO_APP_ROOT)/$(APP_TYPE)/TrustZone_S_ONLY.ld
 endif
-
-#ifeq ("$(ALGO_TYPE)","TEST_CV_ALGO")
-#LIB_SEL += test_cv_algo
-#else #default algo
-#endif
-
-##
-# Add new external device here
-# The source code should be located in ~\external\{device_name}\
-##
-#EXT_DEV_LIST += 
-
 
 ####################################
 ## Transmit Protocol APPL_DEFINES ##

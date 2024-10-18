@@ -32,10 +32,10 @@
  *      ///SPI MASTER
  *      Usage-1: SSPIM pin mux configuration and initialization
  *      ///The output pin of SSPIM is defined by the user application.
- *      hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_SPI_M_DO_1);
- *      hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_SPI_M_DI_1);
- *      hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_SPI_M_SCLK_1);
- *      hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_SPI_M_CS_1);
+ *      hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_SPI_M_DO_1, 1);
+ *      hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_SPI_M_DI_1, 1);
+ *      hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_SPI_M_SCLK_1, 1);
+ *      hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_SPI_M_CS_1, 1);
  *      
  *      ///initialize SSPIM
  *      uint32_t max_spi_freq;
@@ -142,10 +142,10 @@
  *      ///SPI slave
  *      Usage-1: SSPIs pin mux configuration and initialization
  *      ///The output pin of SSPI slave is defined by the user application.
- *      hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_SPI_S_DO);
- *      hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_SPI_S_DI);
- *      hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_SPI_S_CLK);
- *      hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_SPI_S_CS);
+ *      hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_SPI_S_DO, 1);
+ *      hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_SPI_S_DI, 1);
+ *      hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_SPI_S_CLK, 1);
+ *      hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_SPI_S_CS, 1);
  * 
  *      ///initialize SSPI slave
  *      hx_drv_spi_slv_init(USE_DW_SPI_SLV_0, DW_SSPI_S_RELBASE);
@@ -1113,7 +1113,7 @@ typedef enum dev_spi_cs_line
  */
 typedef struct dev_spi_transfer DEV_SPI_TRANSFER, *DEV_SPI_TRANSFER_PTR;
 /**
- * \brief	spi read and write data structure used by \ref SPI_CMD_TRANSFER
+ * \brief	spi read and write data structure used by SPI_CMD_TRANSFER
  * 	spi write then read data
  *
  */
@@ -1424,7 +1424,9 @@ typedef struct dev_spi
     int32_t (*spi_read)(void *data, uint32_t len);
 
     /**
-     * send data to spi device (dma method) , max transfer size = 4095 bytes
+     * send data to spi device (dma method) , 
+     * SSPI Mst max transfer size = 4095 bytes
+     * SSPI Slv max transfer size = 256*4095 bytes
      * 
      * \param[in] data Pointer to the data buffer to be written to SPI master/slave device
      * \param[in] len The length of the data that will be written to the SPI master/slave device.
@@ -1460,8 +1462,10 @@ typedef struct dev_spi
      *      use like this spi_write_ptl(NULL, 0, data_array_ptr, data_size, callback function)
      * \endif
      * 
-     * \param[in] header_buf Pointer to the header buffer will to be written to SPI master/slave device.
-     * \param[in] header_len The length of header wiil to be written to SPI master/slave device.
+     * \param[in] header_buf Pointer to the header buffer will to be written to SPI master/slave device. (opt.)
+     *                      if you don't need header, the param is set to NULL
+     * \param[in] header_len The length of header wiil to be written to SPI master/slave device. (opt.)
+     *                      if you don't need header, the param is set to 0.
      * \param[in] data_packet Pointer to the data buffer will to be written to SPI master/slave device.
      * \param[in] data_len The length of data wiil to be written to SPI master/slave device.
      * \param[out] cb  callback function after operation is done
@@ -1480,11 +1484,10 @@ typedef struct dev_spi
     int32_t (*spi_write_ptl_halt)(void);
 
     /**
-     * read data from spi device ( method with protocol)
-     * \note None of the SPI support 
+     * halt all read data (for halt dma method)
+     * \note It has not been verified.
      */
-    int32_t (*spi_read_ptl)(const void *data_packet, uint32_t *data_len,
-                            void *cb);
+    int32_t (*spi_read_halt)(void);
 
     /**
      * ONLY SSPI master support,

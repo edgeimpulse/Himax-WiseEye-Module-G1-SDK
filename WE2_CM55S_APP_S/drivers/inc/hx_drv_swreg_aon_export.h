@@ -60,6 +60,15 @@ typedef enum {
 } SWREG_AON_OTA_E;
 
 /**
+ * \enum SWREG_AON_MODEMOTA_E
+ * \brief SWREG AON Modem OTA
+ */
+typedef enum {
+	SWREG_AON_MODEMOTA_NO_FLAG = 0, /**< Not MODEM OTA flag */
+	SWREG_AON_MODEMOTA_YES_FLAG, /**< MODEM OTA flag */
+} SWREG_AON_MODEMOTA_E;
+
+/**
  * \enum SWREG_AON_LSCCLKCHANGE_REF_E
  * \brief SWREG AON PMU Wake up LSC Clock change reference CM55S Reset flag or SW control flag
  */

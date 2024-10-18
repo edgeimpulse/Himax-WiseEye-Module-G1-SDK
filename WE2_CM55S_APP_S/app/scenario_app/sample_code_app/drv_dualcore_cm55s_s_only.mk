@@ -20,6 +20,7 @@ DRIVERS_IP_INSTANCE ?= TIMER4 \
 						TIMER6 \
 						TIMER7 \
                         TIMER8 \
-                        UART1
+                        UART1 \
+                        IIC_SLAVE0
 
 DRIVERS_IP_NS_INSTANCE ?=

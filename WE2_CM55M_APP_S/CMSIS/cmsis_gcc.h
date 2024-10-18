@@ -117,9 +117,14 @@
   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
 #endif
 
-/* #########################  Startup and Lowlevel Init  ######################## */
+__STATIC_FORCEINLINE void __ISB(void);
+__STATIC_FORCEINLINE void __DSB(void);
+__STATIC_FORCEINLINE void __DMB(void);
 
+/* #########################  Startup and Lowlevel Init  ######################## */
 #ifndef __PROGRAM_START
+#include "WE2_device_addr.h"
+#include "BITOPS.h"
 
 /**
   \brief   Initializes data and bss sections
@@ -153,10 +158,21 @@ __STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
       pTable->dest[i] = pTable->src[i];
     }
   }
-
-  for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable) {
-    for(uint32_t i=0u; i<pTable->wlen; ++i) {
-      pTable->dest[i] = 0u;
+  
+  uint32_t val;
+  val = (*((volatile unsigned int*) (SWREG_AON_ADDR + 0x0)));
+  
+  if (HX_BIT_GET(val, 1, 3)|| 
+      HX_BIT_GET(val, 1, 11))
+  {
+     /* retention - do not clear bss */
+  }
+  else
+  {
+    for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable) {
+      for(uint32_t i=0u; i<pTable->wlen; ++i) {
+        pTable->dest[i] = 0u;
+      }
     }
   }
 

@@ -65,6 +65,23 @@ uint32_t veneer_clk_ctrl_set_rtc_clk_en(RTC_ID_E id, uint8_t clk_en);
  */
 uint32_t veneer_clk_ctrl_set_rtc_cycle(RTC_ID_E id, uint32_t cycle_width);
 
+
+/**
+ * \brief	get RTC Clock Enable
+ *
+ * \param[out]	clk_en	 Clock Enable
+ * \return	uint32_t.
+ */
+uint32_t veneer_clk_ctrl_get_rtc_clk_en(RTC_ID_E id, uint8_t *clk_en);
+
+/**
+ * \brief	set RTC cycle width
+ *
+ * \param[out]	cycle_width	 cycle width (if clock is 24Mhz, cycle_width 24Mhz is 1 HZ for RTC)
+ * \return	uint32_t.
+ */
+uint32_t veneer_clk_ctrl_get_rtc_cycle(RTC_ID_E id, uint32_t *cycle_width);
+
 /**
  * \brief	get Frequency
  *
@@ -510,5 +527,14 @@ SCU_ERROR_E veneer_clk_get_simple_clk_cfg(SCU_SIMPLE_CLK_CFG_T *cfg);
  * \return	void.
  */
 void veneer_clk_get_systemclkcase_flag(SCU_SYSCLKSRC_HW_E *cfg);
+
+/**
+ * \brief	set RTC State
+ *
+ * \param[in]	state	 RTC state
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E veneer_set_rtc_state(RTC_ID_E id, SCU_RTC_STATE_E state);
+
 
 #endif /* TRUSTZONE_NSC_FUNCTION_VENEER_CLK_CTRL_H_ */

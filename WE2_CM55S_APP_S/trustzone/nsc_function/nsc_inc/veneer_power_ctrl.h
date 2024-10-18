@@ -122,4 +122,12 @@ PM_ERROR_E veneer_pm_force_state_get(PMU_PS_STATE_E *state);
  */
 PM_ERROR_E veneer_pm_set_dma_cfg(uint8_t dma_int);
 
+/**
+ * \brief	The function is used to Force PMU to DC
+ *
+ * \retval	PM_NO_ERROR		success
+ * \retval	others			fail
+ */
+PM_ERROR_E veneer_pm_force_dc();
+
 #endif /* TRUSTZONE_NSC_FUNCTION_PMU_CTRL_H_ */

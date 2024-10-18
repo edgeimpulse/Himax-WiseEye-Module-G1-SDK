@@ -514,7 +514,7 @@ SCU_ERROR_E hx_drv_scu_set_rtc_cycle(RTC_ID_E id, uint32_t cycle_width);
  * \param[out]	cycle_width	 cycle width
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_get_rtc_cycle(RTC_ID_E id, uint32_t *cycle_width, uint32_t *low_width);
+SCU_ERROR_E hx_drv_scu_get_rtc_cycle(RTC_ID_E id, uint32_t *cycle_width);
 #endif
 
 
@@ -693,6 +693,14 @@ SCU_ERROR_E hx_drv_scu_set_xip_en(uint8_t data);
  */
 SCU_ERROR_E hx_drv_scu_set_debug_all_enable(uint8_t data);
 
+/**
+ * \brief	get  CM55S_CPUWAIT
+ *
+ * \param[out]	data	CM55S_CPUWAIT
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_get_CM55S_CPUWAIT(SCU_CM55_CPUWAIT_E *data);
+
 #ifndef BOOT_USED
 /**
  * \brief	get  XIP Enable
@@ -750,13 +758,7 @@ SCU_ERROR_E hx_drv_scu_get_CM55M_INITNSVTOR(uint32_t *address);
  */
 SCU_ERROR_E hx_drv_scu_set_CM55M_CPUWAIT(SCU_CM55_CPUWAIT_E data);
 
-/**
- * \brief	get  CM55M_CPUWAIT
- *
- * \param[out]	data	CM55M_CPUWAIT
- * \return	SCU_ERROR_E.
- */
-SCU_ERROR_E hx_drv_scu_get_CM55M_CPUWAIT(SCU_CM55_CPUWAIT_E *data);
+
 
 /**
  * \brief	set CM55S_INITSVTOR
@@ -791,6 +793,14 @@ SCU_ERROR_E hx_drv_scu_set_CM55S_INITNSVTOR(uint32_t address);
 SCU_ERROR_E hx_drv_scu_get_CM55S_INITNSVTOR(uint32_t *address);
 
 /**
+ * \brief	get  CM55M_CPUWAIT
+ *
+ * \param[out]	data	CM55M_CPUWAIT
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_get_CM55M_CPUWAIT(SCU_CM55_CPUWAIT_E *data);
+
+/**
  * \brief	set CM55S_CPUWAIT
  *
  * \param[in]	data	CM55S_CPUWAIT
@@ -798,13 +808,7 @@ SCU_ERROR_E hx_drv_scu_get_CM55S_INITNSVTOR(uint32_t *address);
  */
 SCU_ERROR_E hx_drv_scu_set_CM55S_CPUWAIT(SCU_CM55_CPUWAIT_E data);
 
-/**
- * \brief	get  CM55S_CPUWAIT
- *
- * \param[out]	data	CM55S_CPUWAIT
- * \return	SCU_ERROR_E.
- */
-SCU_ERROR_E hx_drv_scu_get_CM55S_CPUWAIT(SCU_CM55_CPUWAIT_E *data);
+
 
 
 /**
@@ -2218,7 +2222,7 @@ SCU_ERROR_E hx_drv_scu_get_pdhsc_hscclk_cfg(SCU_PDHSC_HSCCLK_CFG_T *cfg);
 
 /**
  * \brief	set PD HSC HSC_CLK related Configuration
- *
+ * QSPI ssi_clk = src / (div+1)
  * \param[in]	src	 PD HSC QSPI Clock Src
  * \param[in]	div	 PD HSC QSPI Clock Div
  * \return	SCU_ERROR_E.
@@ -2237,7 +2241,7 @@ SCU_ERROR_E hx_drv_scu_get_pdhsc_qspisrc_cfg(SCU_QSPICLKSRC_E *src, uint8_t *div
 #ifndef BOOTROM
 /**
  * \brief	set PD HSC HSC_CLK related Configuration
- *
+ * OSPI ssi_clk = src / (div+1)
  * \param[in]	src	 PD HSC OSPI Clock Src
  * \param[in]	div	 PD HSC OSPI Clock Div
  * \return	SCU_ERROR_E.
@@ -2444,7 +2448,8 @@ SCU_ERROR_E hx_drv_scu_get_pdlsc_ckmonsrcclk_cfg(SCU_LSCCKMONSRC_E *ckmonsrc_clk
 
 /**
  * \brief	set PD LSC SSPI Master CLK Configuration
- *
+ * SSPI Master ssi_clk clock frequency = sspimsrc_clk / (sspim_div + 1f)
+ * Max. SSPIM Frequency is 100 MHz
  * \param[in]	cfg	 PD LSC SSPI Master CLK Configuration
  * \return	SCU_ERROR_E.
  */
@@ -2480,8 +2485,9 @@ SCU_ERROR_E hx_drv_scu_get_pdlsc_pdmck_src(SCU_LSCPDMCLKSRC_E *pdmsrc_clk);
 #endif
 
 /**
- * \brief	set PD LSC SSPI Slave CLK Configuration
- *
+ * \brief	set PD LSC SSPI Slave CLK Configuration  
+ * SSPI Slave ssi_clk clock frequency = sspissrc_clk / (sspis_div + 1)
+ * Max. SSPIM Frequency is 400 MHz
  * \param[in]	cfg	 PD LSC SSPI Slave CLK Configuration
  * \return	SCU_ERROR_E.
  */
@@ -2778,33 +2784,37 @@ SCU_ERROR_E hx_drv_scu_set_APBBRG_AUD_DMA(SCU_REG_APBBRG_AUD_DMA_E dma_en, SCU_A
  * \brief	set PA1 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver Pull Disable
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PA1_pinmux(SCU_PA1_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PA1_pinmux(SCU_PA1_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PA0 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver Pull Disable
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PA0_pinmux(SCU_PA0_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PA2 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver I2CM,UART Pull enable/High. Others Pull Disable
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PA2_pinmux(SCU_PA2_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PA2_pinmux(SCU_PA2_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PA3 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (UART, I2CM pull enable/pull high. others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PA3_pinmux(SCU_PA3_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PA3_pinmux(SCU_PA3_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SEN_I2C_MST_SDA pin mux
@@ -2978,148 +2988,166 @@ SCU_ERROR_E hx_drv_scu_set_SEN_LVALID_pinmux(SCU_SEN_LVALID_PINMUX_E pinmux);
  * \brief	set SDIO_SDCLK pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_SDCLK_pinmux(SCU_SDIO_SDCLK_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_SDCLK_pinmux(SCU_SDIO_SDCLK_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SDIO_CMD pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_CMD_pinmux(SCU_SDIO_CMD_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_CMD_pinmux(SCU_SDIO_CMD_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SDIO_DAT0 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_DAT0_pinmux(SCU_SDIO_DATA0_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_DAT0_pinmux(SCU_SDIO_DATA0_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SDIO_DAT1 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_DAT1_pinmux(SCU_SDIO_DATA1_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_DAT1_pinmux(SCU_SDIO_DATA1_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SDIO_DAT2 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_DAT2_pinmux(SCU_SDIO_DATA2_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_DAT2_pinmux(SCU_SDIO_DATA2_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SDIO_DAT3 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SDIO_DAT3_pinmux(SCU_SDIO_DATA3_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SDIO_DAT3_pinmux(SCU_SDIO_DATA3_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 
 /**
  * \brief	set SW_DATA pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SW_DATA_pinmux(SCU_SW_DATA_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SW_DATA_pinmux(SCU_SW_DATA_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SW_CLK pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_SW_CLK_pinmux(SCU_SW_CLK_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_SW_CLK_pinmux(SCU_SW_CLK_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 
 /**
  * \brief	set PB2 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB2_pinmux(SCU_PB2_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB3 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB3_pinmux(SCU_PB3_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB4 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB4_pinmux(SCU_PB4_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB5 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB5_pinmux(SCU_PB5_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB6 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB6_pinmux(SCU_PB6_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB7 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB7_pinmux(SCU_PB7_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB7_pinmux(SCU_PB7_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB8 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB8_pinmux(SCU_PB8_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB8_pinmux(SCU_PB8_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 
 /**
  * \brief	set PB9 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB9_pinmux(SCU_PB9_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB9_pinmux(SCU_PB9_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB10 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB10_pinmux(SCU_PB10_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB10_pinmux(SCU_PB10_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB11 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB11_pinmux(SCU_PB11_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB11_pinmux(SCU_PB11_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PC3 pin mux
@@ -3152,7 +3180,7 @@ SCU_ERROR_E hx_drv_scu_set_OSPI_pinmux(SCU_OSPI_PINMUX_E pinmux);
  * \param[in]	pinmux	pin mux
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_I2CM_SCLSDA_pinmux(SCU_I2CM_SCLSDA_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_I2CM_SCLSDA_pinmux(SCU_I2CM_SCLSDA_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 #endif
 
@@ -3160,25 +3188,28 @@ SCU_ERROR_E hx_drv_scu_set_I2CM_SCLSDA_pinmux(SCU_I2CM_SCLSDA_PINMUX_E pinmux);
  * \brief	set PB0 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SDIO, UART, I2CM pull enable/pull high. Others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB0_pinmux(SCU_PB0_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB0_pinmux(SCU_PB0_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set PB1 pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable) 
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_PB1_pinmux(SCU_PB1_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_PB1_pinmux(SCU_PB1_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set UART pin mux
  *
  * \param[in]	pinmux	pin mux
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (UART RX/TX pull enable/pull high. others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_UART_RX_TX_CTS_RTS_pinmux(SCU_UART_PINMUX_E pinmux);
+SCU_ERROR_E hx_drv_scu_set_UART_RX_TX_CTS_RTS_pinmux(SCU_UART_PINMUX_E pinmux, uint8_t autocfg_pullcfg);
 
 /**
  * \brief	set SPIS_DO pin mux
@@ -3281,14 +3312,6 @@ SCU_ERROR_E hx_drv_scu_set_AON_SWReset(SCU_AON_SWRESET_T cfg);
 SCU_ERROR_E hx_drv_scu_set_SB_SWReset(SCU_SB_SWRESET_T cfg);
 
 /**
- * \brief	set LSC related SW reset
- *
- * \param[in]	cfg	LSC Related SW Reset
- * \return	SCU_ERROR_E.
- */
-SCU_ERROR_E hx_drv_scu_set_LSC_SWReset(SCU_LSC_SWRESET_T cfg);
-
-/**
  * \brief	set HSC related SW reset
  *
  * \param[in]	cfg	HSC Related SW Reset
@@ -3296,6 +3319,13 @@ SCU_ERROR_E hx_drv_scu_set_LSC_SWReset(SCU_LSC_SWRESET_T cfg);
  */
 SCU_ERROR_E hx_drv_scu_set_HSC_SWReset(SCU_HSC_SWRESET_T cfg);
 #endif
+/**
+ * \brief	set LSC related SW reset
+ *
+ * \param[in]	cfg	LSC Related SW Reset
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_LSC_SWReset(SCU_LSC_SWRESET_T cfg);
 
 
 #ifndef BOOT_USED
@@ -3418,9 +3448,10 @@ SCU_ERROR_E hx_drv_scu_get_all_pinmux_cfg(SCU_PINMUX_CFG_T *pinmux_cfg);
  * \brief	set All Pin Mux Configuration
  *
  * \param[in]	pinmux_cfg	 reset
+ * \param[in]	autocfg_pullcfg	 auto configuration PULL setting by driver (SWD, SDIO, UART, I2CM, SPIM_CS pull enable/pull high. Others pull disable)
  * \return	SCU_ERROR_E.
  */
-SCU_ERROR_E hx_drv_scu_set_all_pinmux_cfg(SCU_PINMUX_CFG_T *pinmux_cfg);
+SCU_ERROR_E hx_drv_scu_set_all_pinmux_cfg(SCU_PINMUX_CFG_T *pinmux_cfg, uint8_t autocfg_pullcfg);
 #endif
 
 /**
@@ -3573,7 +3604,73 @@ void hx_drv_scu_msc_i3ch_irq_handler(void);
  * \return	none.
  */
 void hx_drv_scu_msc_sdio_irq_handler(void);
+
+/**
+ * \brief	Check Memory Space attribute
+ *
+ * \param[in]	start_addr    start address for check memory attribute
+ * \param[in]	size    memory size for check memory attribute
+ * \param[in]	attr    memory attribute that app expected
+ * \return	SCU_ERROR_E. memory space is as app expected or not
+ */
+SCU_ERROR_E hx_drv_scu_check_mem_attr(uint32_t start_addr, uint32_t size, SCU_MEM_ATTR_E attr);
+
+/**
+ * \brief	Set DP Clock source
+ *
+ * \param[in]	clksrc    set DP Clock source
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_dpclk(SCU_HSCDPCLKSRC_E clksrc);
+
+/**
+ * \brief	set HSC_CLK Premux as PLL or RC96/RC48
+ *
+ * \param[in]	pllmux	 1: PLL, 0:RC96/RC48
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_hscclk_pllrc96premux(uint8_t pllmux);
+
+/**
+ * \brief	set LSC_CLK Premux as PLL or RC96/RC48
+ *
+ * \param[in]	pllmux	 1: PLL, 0:RC96/RC48
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_lscclk_pllrc96premux(uint8_t pllmux);
+
+/**
+ * \brief	Set MIPI Control
+ *
+ * \param[in]	ctrl	 MIPI control
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_mipi_ctrl(SCU_MIPI_CTRL_E ctrl);
+/**
+ * \brief	Get MIPI Control
+ *
+ * \param[out]	ctrl	 MIPI control
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_get_mipi_ctrl(SCU_MIPI_CTRL_E *ctrl);
 #endif
+
+/**
+ * \brief	set disable I2C Interface to SPI Flash WR
+ *
+ * \param[in]	disable	 Disable I2C Interface to SPI Flash WR
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_i2ctoflashwr_access(uint8_t disable);
+
+/**
+ * \brief	set disable SPI Interface to SPI Flash WR
+ *
+ * \param[in]	disable	 Disable SPI Interface to SPI Flash WR
+ * \return	SCU_ERROR_E.
+ */
+SCU_ERROR_E hx_drv_scu_set_spitoflashwr_access(uint8_t disable);
+
 
 /** @} */
 #ifdef __cplusplus

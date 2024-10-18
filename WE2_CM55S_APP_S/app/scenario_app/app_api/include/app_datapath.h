@@ -31,6 +31,8 @@ typedef struct
     APP_INIT_TYPE_E init_type;
     SENSORDPLIB_SENSOR_E sensor_type;
     SENSORDPLIB_STREAM_E stream_type;
+    SENSORDPLIB_STREAM_E stream_type_aos;
+    SENSORDPLIB_STREAM_E stream_type_nonaos;
     INP_SUBSAMPLE_E inp_subsample_type;
     INP_CROP_T crop;
     #if (IC_VERSION >= 30)
@@ -119,6 +121,14 @@ void app_dp_cis_init(SENSORDPLIB_SENSOR_E sensor_type);
 void app_dp_cis_streaming_on(SENSORDPLIB_STREAM_E stream_type);
 
 /**
+ * \brief	sensor initialization
+ *
+ * \param[in]	*dp_init_cfg	    data path (include sensor) init settings
+ * \return	app api error code
+ */
+int8_t app_sensor_init(const app_dp_cfg_t* dp_init_cfg);
+	
+/**
  * \brief	data path initialization
  *
  * \param[in]	*dp_init_cfg	    data path init settings
@@ -127,12 +137,29 @@ void app_dp_cis_streaming_on(SENSORDPLIB_STREAM_E stream_type);
 int8_t app_dp_init(const app_dp_cfg_t* dp_init_cfg);
 
 /**
+ * \brief	data path jepg and raw (yuv) frame configs 
+ *
+ * \param[in]	*dp_cap_settings	    data path capture frame settings
+ * \return	app api error code
+ */
+int8_t app_dp_jpeg_raw_cfg(const app_dp_cap_t* dp_cap_settings);
+
+/**
  * \brief	data path capture frame 
  *
  * \param[in]	*dp_cap_settings	    data path capture frame settings
  * \return	app api error code
  */
 int8_t app_dp_capture_frame(const app_dp_cap_t* dp_cap_settings);
+
+
+/**
+ * \brief	data path jepg frame configs 
+ *
+ * \param[in]	*dp_cap_settings	    data path capture frame settings
+ * \return	app api error code
+ */
+int8_t app_dp_jpeg_cfg(const app_dp_cap_t* dp_cap_settings);
 
 /**
  * \brief	data path capture jpeg frame 
@@ -143,12 +170,37 @@ int8_t app_dp_capture_frame(const app_dp_cap_t* dp_cap_settings);
 int8_t app_dp_capture_jpeg_frame(const app_dp_cap_t* dp_cap_settings);
 
 /**
+ * \brief	data path raw frame configs 
+ *
+ * \param[in]	*dp_cap_settings	    data path capture raw frame settings
+ * \return	app api error code
+ */
+int8_t app_dp_raw_cfg(const app_dp_cap_t* dp_cap_settings);
+
+/**
  * \brief	data path capture raw frame 
  *
  * \param[in]	*dp_cap_settings	    data path capture raw frame settings
  * \return	app api error code
  */
 int8_t app_dp_capture_raw_frame(const app_dp_cap_t* dp_cap_settings);
+
+/**
+ * \brief	data path raw (yuv) frame configs 
+ *
+ * \param[in]	*dp_cap_settings	    data path capture raw (yuv) frame settings
+ * \return	app api error code
+ */
+int8_t app_dp_raw_yuv_cfg(const app_dp_cap_t* dp_cap_settings);
+
+/**
+ * \brief	data path capture raw (yuv) frame 
+ *
+ * \param[in]	*dp_cap_settings	    data path capture raw (yuv) frame settings
+ * \return	app api error code
+ */
+int8_t app_dp_capture_raw_yuv_frame(const app_dp_cap_t* dp_cap_settings);
+
 
 /**
  * \brief	data path capture frame with cdm 

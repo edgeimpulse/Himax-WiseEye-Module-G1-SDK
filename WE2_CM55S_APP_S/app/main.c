@@ -13,7 +13,12 @@
 #include <stdlib.h>
 #include "WE2_device.h"
 #include "board.h"
+#include "console_io.h"
+#ifdef LIB_COMMON
 #include "xprintf.h"
+#endif
+#include "pinmux_init.h"
+#include "platform_driver_init.h"
 #define CIS_XSHUT_SGPIO0
 
 #ifdef HM_COMMON
@@ -60,8 +65,8 @@
 
 #include "cli.h"
 #include "board.h"
-#ifdef LIB_COMMON
 #include "console_io.h"
+#ifdef LIB_COMMON
 #include "xprintf.h"
 #endif
 #include "hx_drv_timer.h"
@@ -173,7 +178,16 @@ void cli_app_start()
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 #ifdef FREERTOS
     if (xTaskCreate(cli_task, "cli_task", configMINIMAL_STACK_SIZE + 100, NULL, hello_task_PRIORITY, NULL) !=
         pdPASS)
@@ -201,7 +215,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -213,7 +236,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -225,7 +257,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -237,7 +278,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -249,7 +299,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -261,7 +320,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -273,7 +341,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	hello_world_app();
 	return 0;
 }
@@ -285,7 +362,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	tz_to_cli_app();
 	return 0;
 }
@@ -297,7 +383,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	tz_to_cli_dual_app();
 	return 0;
 }
@@ -309,7 +404,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	tz_to_cli_dual_pmu_app();
 	return 0;
 }
@@ -321,7 +425,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	tz_to_cli_dual_peripheral_app();
 	return 0;
 }
@@ -335,7 +448,16 @@ int main(void)
 
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	printf("AUTOTEST Start\n");
 #ifdef BYPASS_TEST
 	BYPASS_AUTOTEST_ALL();
@@ -351,7 +473,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -363,7 +494,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     notebook_example_app();
     return 0;
 }
@@ -375,9 +515,39 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	app_main();
     return 0;
+}
+#endif
+
+#ifdef FOR_DRIVER_PREBUILT
+#include "for_driver_prebuilt.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	app_main();
+	return 0;
 }
 #endif
 
@@ -387,7 +557,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	swvad_hwvad_evt_app();
 	return 0;
 }
@@ -399,7 +578,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -411,7 +599,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -424,7 +621,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -436,7 +642,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -448,7 +663,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	tz_to_cli_dual_app();
 	return 0;
 }
@@ -460,7 +684,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -472,7 +705,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -484,7 +726,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -496,7 +747,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -509,7 +769,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -522,7 +791,16 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
     hello_world_app();
     return 0;
 }
@@ -534,20 +812,143 @@ int main(void)
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	pmu_audpre_cm55s_timer2_app();
     return 0;
 }
 #endif
 
-#ifdef PMU_SIM_AUDVIDPRE_CM55S_TIMER2
+#ifdef PMU_AUDVIDPRE_CM55S_TIMER2_SAMPLE
 #include "pmu_audvidpre_cm55s_timer2_sample.h"
 
 /** main entry */
 int main(void)
 {
-	board_init();
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
 	pmu_audvidpre_cm55s_timer2_app();
+    return 0;
+}
+#endif
+
+#ifdef PMU_AUDVIDPRE_CM55S_CDM_SAMPLE
+#include "pmu_audvidpre_cm55s_cdm_sample.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	pmu_audvidpre_cm55s_cdm_app();
+    return 0;
+}
+#endif
+
+#ifdef SIM_DHRY
+#include "dhry.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	sim_dhry();
+    return 0;
+}
+#endif
+
+#ifdef PMU_AUDPRE_CM55S_TIMER2_SIM
+#include "pmu_audpre_cm55s_timer2_sample_sim.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	pmu_audpre_cm55s_timer2_app_sim();
+    return 0;
+}
+#endif
+
+#ifdef PMU_AUDPRE_CM55S_TIMER2_0P8V_SIM
+#include "pmu_audpre_cm55s_timer2_sample_0p8v_sim.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	pmu_audpre_cm55s_timer2_sample_0p8v_sim();
+    return 0;
+}
+#endif
+
+#ifdef PMU_AUDPRE_CM55S_TIMER2_0P8V
+#include "pmu_audpre_cm55s_timer2_sample_0p8v.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	pmu_audpre_cm55s_timer2_sample_0p8v();
     return 0;
 }
 #endif
@@ -561,5 +962,47 @@ int main(void)
 	app_main();
 
 	return 0;
+}
+#endif
+
+#ifdef PMU_AUDPRE_CM55S_DP_CPU
+#include "pmu_audpre_cm55s_dp_cpu_sample.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	pmu_audpre_cm55s_dp_cpu_app();
+    return 0;
+}
+#endif
+
+#ifdef SIMPLE_APP
+#include "simple_app.h"
+
+/** main entry */
+int main(void)
+{
+		/*set pinmux init*/
+	pinmux_init();
+	/*platform driver init*/
+	platform_driver_init();
+#ifdef IP_uart
+	console_setup(DW_UART_1_ID, UART_BAUDRATE_115200);
+#endif
+#ifdef LIB_COMMON
+	xprintf_setup();
+#endif
+	simple_app();
+    return 0;
 }
 #endif

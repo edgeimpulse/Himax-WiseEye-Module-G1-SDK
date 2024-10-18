@@ -48,7 +48,7 @@ typedef enum {
 	HX_CIS_UNKNOWN_ERROR = 4, /**< ERROR MSG: UNKNOWN ERROR*/
 	HX_CIS_I2C_ADDR_NO_ACK = -60, /**< ERROR MSG: I2C ADDRESS NO ACK */
 	HX_CIS_I2C_DATA_NO_ACK = -61, /**< ERROR MSG: I2C DATA NO ACK */
-	HX_CIS_I2C_LOST_BUS = -5 /**< ERROR MSG: I2C LOST BUS */
+	HX_CIS_I2C_LOST_BUS = -64 /**< ERROR MSG: I2C LOST BUS */
 } HX_CIS_ERROR_E;
 
 /**
@@ -201,6 +201,36 @@ HX_CIS_ERROR_E hx_drv_cis_CMU_Update(void);
  * \return HX_CIS_ERROR_E.
  * */
 HX_CIS_ERROR_E hx_drv_cis_xshutdown_rst(void);
+/**
+ * \brief Toggled XSHUTDOWN to High.
+ *
+ * \return HX_CIS_ERROR_E.
+ * */
+HX_CIS_ERROR_E hx_drv_cis_xshutdown_high(void);
+/**
+ * \brief Toggled XSHUTDOWN to Low.
+ *
+ * \return HX_CIS_ERROR_E.
+ * */
+HX_CIS_ERROR_E hx_drv_cis_xshutdown_low(void);
+/**
+ * \brief Enable SOI sensor init flow
+ *
+ * \return HX_CIS_ERROR_E.
+ * */
+HX_CIS_ERROR_E hx_drv_cis_enable_soi_init_flow(void);
+/**
+ * \brief Disable SOI sensor init flow
+ *
+ * \return HX_CIS_ERROR_E.
+ * */
+HX_CIS_ERROR_E hx_drv_cis_disable_soi_init_flow(void);
+/**
+ * \brief Change Xsleep default value
+ *
+ * \return HX_CIS_ERROR_E.
+ * */
+HX_CIS_ERROR_E hx_drv_cis_set_xsleep_def_val(uint8_t val);
 /** @} */
 #ifdef __cplusplus
 }

@@ -1,14 +1,14 @@
 {
     "bootloader": {
-        "input_file": "common\\bl\\WE2_FW_BL_arm_we2_evb_xtal24rc32k.bin",
+        "input_file": "common\\bl\\WE2_FW_BL_arm_we2_evb_xtal24rc96rc32k.bin",
         "sec_format": "BLP",
 		"pat_type": 0,
         "version": 2,
-        "flash_addr": "0x14000",
+        "flash_addr": "0x15000",
         "exec_addr": "0x34005000"
     },
     "2nd_bootloader": {
-        "input_file": "common\\2ndbl\\WE2_FW_2NDBL_arm_we2_evb.bin",
+        "input_file": "common\\2ndbl\\Debug\\WE2_FW_2NDBL_arm_we2_evb.bin",
         "sec_format": "BLP",
 		"pat_type": 1,
         "version": 2,
@@ -27,5 +27,13 @@
 		"pat_type": 3,
         "sec_attr": "secure",
         "version": 2
+    },
+    "loader_config": {
+        "input_file": "common\\cfg\\Loader_config.bin",
+        "sec_format": "BLP",
+		"pat_type": 14,
+        "sec_attr": "secure",
+        "version": 2,
+		"exec_addr": "0x34000800" 
     }
 }

@@ -5,7 +5,7 @@
 EPII_ROOT = .
 
 # Application name
-APPL ?= WE2_CM55M
+APPL ?= EPII_CM55M
 
 # Optimization Level
 OLEVEL ?= O2
@@ -21,7 +21,7 @@ CORTEX_M ?= 55
 EPII_CORE ?= BIG
 
 ##
-# IC package select : LQFP128/WLCSP65
+# IC package select : LQFP128/WLCSP65/QFN88/BGA64
 ##
 IC_PACKAGE_SEL = WLCSP65
 
@@ -51,7 +51,7 @@ GNU_TOOLPATH ?=
 ##
 # Selected OS
 # bare-matal: mark OS_SEL, support os: un-mark OS_SEL
-OS_SEL ?= 
+OS_SEL ?= freertos
 
 ##
 # Selected MPU
@@ -97,6 +97,8 @@ EPII_NSC_SEL = cm55m_nsc_cfg
 # other for disable
 ##
 LIB_CMSIS_NN_ENALBE = 0
+## 0 : default version, cmsis_nn_5_0_0: 5_0_0 
+LIB_CMSIS_NN_VERSION = 5_0_0
 
 # USING Pre-built CV library
 # 1 for enable
@@ -121,6 +123,11 @@ CMSIS_DRIVERS_USECASE_SEL =
 # other for disable
 ##
 SUPPORT_SEC_LIB ?= n
+
+# customer name for customer specific API
+# seeed
+##
+CUSTOMER ?= 
 ##
 # Integrate Support
 # CLI_CPU_NOTZ
@@ -176,6 +183,7 @@ SUPPORT_SEC_LIB ?= n
 # hello_world_freertos_notz
 # hello_world_freertos_mpu_notz
 # hello_world_dual_s
+# hello_world_rtos2_rtx_tz_s_only
 # freertos_tz_s_only_sample
 # freertos_tz_s_dp_sample
 # pmu_tz_s_only
@@ -202,21 +210,15 @@ SUPPORT_SEC_LIB ?= n
 # tflm_2in1_fd_fl_pl
 # allon_sensor
 # demo_tfm170_s
-# pmu_dpd_sample
+# pmu_dpd_samples
 # pmu_pd_sample
 # pmu_vidpre_sample
 # tz_pmu_sample
 # tz_pmu_sample_dual
 ##
-#APP_TYPE = CLI_PLATFORM_AT_S
-#APP_TYPE = CLI_PERIPHERAL
-#APP_TYPE = CLI_PMU_TZ_S_ONLY
+APP_TYPE = CLI_HM0360_BAYER_DP_LIB
 
-APP_TYPE = sample_code_app_singlecore_s_only
-
-#APP_TYPE = sample_code_app_dpd_singlecore_s_only
-#APP_TYPE = sample_code_app_vidpre_singlecore_s_only
-
+ 
 ### Options above must be added before include options.mk ###
 override EPII_ROOT := $(strip $(subst \,/,$(EPII_ROOT)))
 include $(EPII_ROOT)/options/options.mk

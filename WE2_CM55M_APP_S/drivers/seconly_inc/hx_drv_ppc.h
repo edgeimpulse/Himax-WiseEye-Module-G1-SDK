@@ -591,4 +591,74 @@ PPC_ERROR_E hx_drv_ppc_register_bootrom_cb(PPC_ISREvent_t  cb_event);
  */
 PPC_ERROR_E hx_drv_ppc_register_apb1_aon_cb(PPC_ISREvent_t  cb_event);
 
+/**
+ * \brief	PPC ISP IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_isp_irq_handler(void);
+
+/**
+ * \brief	PPC AHB3 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_ahb3_irq_handler(void);
+
+/**
+ * \brief	PPC AHB1M4 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_ahb1m4_irq_handler(void);
+
+/**
+ * \brief	PPC AHB0NS IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_ahb0ns_irq_handler(void);
+
+/**
+ * \brief	PPC APB0PS IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_apb0ps_irq_handler(void);
+
+/**
+ * \brief	PPC APB1NS IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_apb1ns_irq_handler(void);
+
+/**
+ * \brief	PPC APB1PS IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_apb1ps_irq_handler(void);
+
+/**
+ * \brief	PPC APB2 IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_apb2_irq_handler(void);
+
+/**
+ * \brief	PPC BOOTROM IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_bootrom_irq_handler(void);
+
+/**
+ * \brief	PPC APB_AON IRQ handler
+ *
+ * \return	none.
+ */
+void hx_drv_ppc_apb_aon_irq_handler(void);
+
 #endif /* DRIVERS_INC_HX_DRV_PPC_H_ */
