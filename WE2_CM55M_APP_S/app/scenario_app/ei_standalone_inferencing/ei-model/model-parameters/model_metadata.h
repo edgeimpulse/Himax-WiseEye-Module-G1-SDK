@@ -35,6 +35,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "edge-impulse-sdk/classifier/ei_constants.h"
 
 #define EI_CLASSIFIER_NONE                       255
 #define EI_CLASSIFIER_UTENSOR                    1
@@ -49,6 +50,7 @@
 #define EI_CLASSIFIER_SYNTIANT                   10
 #define EI_CLASSIFIER_ONNX_TIDL                  11
 #define EI_CLASSIFIER_MEMRYX                     12
+#define EI_CLASSIFIER_ETHOS_LINUX                13
 
 #define EI_CLASSIFIER_SENSOR_UNKNOWN             -1
 #define EI_CLASSIFIER_SENSOR_MICROPHONE          1
@@ -68,16 +70,17 @@
 #define EI_CLASSIFIER_DATATYPE_UINT8             3
 #define EI_CLASSIFIER_DATATYPE_INT8              9
 
-#define EI_CLASSIFIER_PROJECT_ID                 14225
-#define EI_CLASSIFIER_PROJECT_OWNER              "Edge Impulse Inc."
+#define EI_CLASSIFIER_PROJECT_ID                 488671
+#define EI_CLASSIFIER_PROJECT_OWNER              "Embedded Matt"
 #define EI_CLASSIFIER_PROJECT_NAME               "Tutorial: Responding to your voice"
-#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     91
+#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     84
 #define EI_CLASSIFIER_NN_INPUT_FRAME_SIZE        624
 #define EI_CLASSIFIER_RAW_SAMPLE_COUNT           15488
 #define EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME      1
 #define EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE       (EI_CLASSIFIER_RAW_SAMPLE_COUNT * EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME)
 #define EI_CLASSIFIER_INPUT_WIDTH                0
 #define EI_CLASSIFIER_INPUT_HEIGHT               0
+#define EI_CLASSIFIER_RESIZE_MODE                EI_CLASSIFIER_RESIZE_NONE
 #define EI_CLASSIFIER_INPUT_FRAMES               0
 #define EI_CLASSIFIER_NN_OUTPUT_COUNT            3
 #define EI_CLASSIFIER_INTERVAL_MS                0.0625
@@ -116,6 +119,7 @@
 #define EI_CLASSIFIER_LOAD_FFT_1024              0
 #define EI_CLASSIFIER_LOAD_FFT_2048              0
 #define EI_CLASSIFIER_LOAD_FFT_4096              0
+#define EI_CLASSIFIER_NON_STANDARD_FFT_SIZES     0
 
 #define EI_DSP_PARAMS_GENERATED 1
 
@@ -130,8 +134,8 @@
 #define EI_CLASSIFIER_SLICE_SIZE                 (EI_CLASSIFIER_RAW_SAMPLE_COUNT / EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW)
 
 #define EI_STUDIO_VERSION_MAJOR             1
-#define EI_STUDIO_VERSION_MINOR             54
-#define EI_STUDIO_VERSION_PATCH             4
+#define EI_STUDIO_VERSION_MINOR             60
+#define EI_STUDIO_VERSION_PATCH             5
 
 #define EI_CLASSIFIER_HR_ENABLED            0
 
@@ -287,6 +291,7 @@ typedef struct {
     size_t named_axes_size;
     const char * ppg_ecg;
     int filter_preset;
+    int hr_win_size_s;
     float sensitivity;
     float acc_resting_std;
     const char * hrv_features;
@@ -294,5 +299,10 @@ typedef struct {
     float hrv_update_interval_s;
     float hrv_win_size_s;
 } ei_dsp_config_hr_t;
+
+typedef struct {
+    int:0;
+} ei_post_processing_output_t;
+
 
 #endif // _EI_CLASSIFIER_MODEL_METADATA_H_

@@ -9,8 +9,8 @@ MEMORY
   CM55M_S_APP_FLASH1 (rx) : ORIGIN = 0x3A180000, LENGTH = 0x00680000
 }
 
-__HEAP_SIZE = 0x2000;
-__STACK_SIZE = 0x6000;
+__HEAP_SIZE = 0x10000;
+__STACK_SIZE = 0x8000;
 
 ENTRY(Reset_Handler)
 
@@ -86,7 +86,7 @@ SECTIONS
         __rodata_start = .;
         *(.rodata .rodata.* .constdata .constdata.*)
         __rodata_end = .;
-    } > CM55M_S_APP_ROM
+    } > CM55M_S_SRAM
     
     /*
      * for exception handling/unwind - some Newlib functions (in common

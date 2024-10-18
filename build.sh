@@ -56,7 +56,7 @@ fi
 
 if [ ! -z ${BUILD} ];
 then
-    make --silent -j `nproc`
+    make -j `nproc`
     make flash
     # cd ${SCRIPTPATH}/we2_image_gen_local/
     # cp ${SCRIPTPATH}/WE2_CM55M_APP_S/obj_epii_evb_icv30_bdv10/gnu_epii_evb_QFN88/WE2_CM55M_gnu_epii_evb_QFN88_s.elf input_case1_secboot/
